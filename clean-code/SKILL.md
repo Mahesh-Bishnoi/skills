@@ -155,7 +155,7 @@ No pattern without its trigger. Patterns obey the one-vs-two-adapter rule.
 ## 9. Cross-cutting concerns
 
 - **Logging:** structured, at boundaries and decision points, with correlation IDs. Never log secrets/PII. Don't log-and-rethrow at every layer. Follow the `observability` skill §3 for event shape and the visible `log(format(x))` call-site rule (never a `logResult(x)` wrapper that hides message, format, or destination). For production telemetry design (RED/USE metrics, tracing, alerting), use the `observability` skill.
-- **Security:** validate external input at the boundary; parameterized queries only; least privilege; secrets from env/secret store, never in code. Validate server-side fetch URLs against an allowlist (SSRF); back rate limiters with a shared store when >1 instance serves traffic; strip sensitive fields before any response; treat model/LLM output as untrusted input.
+- **Security:** load the `hardening` skill and follow it — input validation, query parameterization, secret handling, SSRF, rate limits, response redaction, and LLM-output rules all live there.
 - **Concurrency:** avoid shared mutable state; if unavoidable, give it one owner. Make retried operations idempotent.
 - **Performance:** clear first, measure, then optimize the measured hotspot (see the `performance` skill). Watch for N+1 queries and unbounded loops/collections in IO paths.
 - **Resources:** always release files, connections, locks via scoped constructs (`with`, `using`, `defer`, try-with-resources).

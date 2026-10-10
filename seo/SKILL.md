@@ -1,6 +1,6 @@
 ---
 name: seo
-description: Optimizes web pages for search crawlability, metadata, headings, and structured data. Use when SEO, search ranking, meta tags, sitemaps, canonical URLs, or JSON-LD structured data is requested, or a Lighthouse SEO score needs improvement.
+description: Optimizes web pages for search crawlability, metadata, headings, and structured data. Use when a technical SEO audit, meta tags, sitemaps, canonical URLs, or JSON-LD structured data is requested, or a Lighthouse SEO score needs improvement.
 ---
 
 # SEO
@@ -11,7 +11,7 @@ Source: adapted from `addyosmani/web-quality-skills` (`seo`, MIT). Condensed her
 
 ## When to Use
 
-- SEO audit, search visibility, or ranking diagnosis requested
+- Technical SEO audit or search visibility diagnosis requested (technical correctness only, no ranking promises)
 - Meta tags, headings, canonical URLs, sitemaps, or `robots.txt` defects reported
 - JSON-LD structured data requested or flagged ineligible
 - New public page about to ship and needs to be discoverable
@@ -51,7 +51,7 @@ Without live tooling: category-specific Lighthouse CLI output plus direct source
 - **Headings.** Primary heading descriptive, hierarchy logical without skipped levels. Do not fail valid HTML solely for multiple `h1`s.
 - **Images.** Descriptive filenames, content-describing `alt`, correct dimensions, modern formats with fallbacks, lazy-load below the fold. The same `alt` must also satisfy `accessibility` naming — never keyword-stuff.
 - **Internal links.** Descriptive anchors (`Browse our blue widget collection`, not `Click here`); breadcrumbs for hierarchy; fix broken links promptly.
-- **Mobile.** Responsive viewport (`width=device-width, initial-scale=1`); readable base font; tap targets at least 48 px on mobile surfaces. (Mobile discoverability ask; WCAG AA minimum is 24×24 per `accessibility` — meet both, use the larger on mobile.)
+- **Mobile.** Responsive viewport (`width=device-width, initial-scale=1`); readable base font; tap targets comfortably tappable on mobile surfaces, meeting at least the WCAG AA minimum in `accessibility`.
 
 ## Structured Data
 

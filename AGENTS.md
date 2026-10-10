@@ -44,7 +44,7 @@ Do not commit personal checkout paths into any project's `opencode.jsonc`. Do no
 - Add: create `<skill-id>/SKILL.md` with `name` + `description`, supporting files beside it. Pick advertised (default) or user-only (`metadata.opencode/autoinvoke: false`). Run lint before committing. Setup docs are not skills — add to `setup/<topic>.md` + route via `setup/_index.md`, exposed through `commands/setup.md`.
 - Update: edit here, push; consumers `git pull`. No re-copying needed for globally-referenced installs.
 - Remove: delete the directory. Before deleting, grep consuming projects for per-project copies under `.opencode/skills/<id>`.
-- Per-project copy (`<project>/.opencode/skills/<id>/`) is opt-in only, when a skill must ship with that repo for team/CI. Default is global reference. Project-local IDs intentionally override global ones — avoid duplicate IDs unless overriding.
+- Per-project copy (`<project>/.opencode/skills/<id>/`) is opt-in only, when a skill must ship with that repo for team/CI. Default is global reference. Avoid duplicate IDs: explicit `skills` config entries (e.g. `~/code/skills`) outrank `.opencode/skills` on the same ID in V2, so a pinned copy with the same ID is hidden — use a different ID (e.g. `<id>-pinned`) when pinning.
 - Consumer projects: scaffold their `AGENTS.md` via `@project-bootstrap` from `templates/AGENTS.template.md`. Universal text stays in the global file; never inline it into project files.
 
 ## Verify

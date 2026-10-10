@@ -1,6 +1,6 @@
 ---
 name: observability
-description: Instruments code so production behavior is visible and diagnosable. Use when adding logging, metrics, tracing, or alerting. Use when shipping any feature that runs in production and you need evidence it works. Use when production issues are reported but you can't tell what happened from the available data.
+description: Instruments code so production behavior is visible and diagnosable. Use when adding logging, metrics, tracing, or alerting to a service, endpoint, job, or integration, or when production issues can't be diagnosed from existing data.
 ---
 
 # Observability
@@ -11,7 +11,7 @@ Source: adapted from `addyosmani/agent-skills` (`observability-and-instrumentati
 
 ## When to Use
 
-- Building any feature that will run in production
+- Adding telemetry alongside a feature that introduces new production behavior
 - Adding a new service, endpoint, background job, or external integration
 - A production incident took too long to diagnose ("we couldn't tell what happened")
 - Setting up or reviewing alerting rules
@@ -21,8 +21,8 @@ Source: adapted from `addyosmani/agent-skills` (`observability-and-instrumentati
 
 - Diagnosing a failure happening right now — use the `debug` skill (observability is what makes that skill fast next time)
 - Profiling and optimizing measured slowness — use the `performance` skill (§1–§2 for measurement and bottleneck identification), don't guess
-- Launch-day checklists and rollback triggers — this skill covers the instrumentation that feeds them (see §6b); full launch workflow is planned separately
-- Deep security review — hand off to `security-audit`; this skill covers only the telemetry side (no secrets/PII in logs)
+- Launch-day checklists and rollback triggers — this skill covers the instrumentation that feeds them (see §6); full launch workflow is planned separately
+- Deep security review — ask the user to invoke `@security-audit`; this skill covers only the telemetry side (no secrets/PII in logs)
 
 ## Stack note
 
@@ -139,9 +139,9 @@ from opentelemetry import metrics
 
 meter = metrics.get_meter("checkout")
 http_duration = meter.create_histogram(
-    "http.request.duration",
+    "http.server.request.duration",
     unit="s",
-    description="HTTP request duration",
+    description="HTTP server request duration",
 )
 http_duration.record(elapsed_s, {"method": method, "route": route_template, "status_class": "5xx"})
 ```
@@ -150,9 +150,9 @@ Java:
 
 ```java
 Meter meter = GlobalOpenTelemetry.getMeter("checkout");
-DoubleHistogram httpDuration = meter.histogramBuilder("http.request.duration")
+DoubleHistogram httpDuration = meter.histogramBuilder("http.server.request.duration")
     .setUnit("s")
-    .setDescription("HTTP request duration")
+    .setDescription("HTTP server request duration")
     .build();
 httpDuration.record(elapsedS,
     Attributes.of(
@@ -167,9 +167,9 @@ TypeScript:
 import { metrics } from '@opentelemetry/api';
 
 const meter = metrics.getMeter('checkout');
-const httpDuration = meter.createHistogram('http.request.duration', {
+const httpDuration = meter.createHistogram('http.server.request.duration', {
   unit: 's',
-  description: 'HTTP request duration',
+  description: 'HTTP server request duration',
 });
 httpDuration.record(elapsedS, { method, route: routeTemplate, status_class: '5xx' });
 ```
@@ -341,7 +341,7 @@ Instrumentation is code; it can be wrong. Before calling the work done, trigger 
 
 ## Verification
 
-After instrumenting a feature, confirm against [references/checklist.md](references/checklist.md):
+Canonical checklist (pre-launch instrumentation gate lives in [references/checklist.md](references/checklist.md)):
 
 - The on-call questions for this feature are written down, and each signal maps to one
 - All log output is structured, with stable event names and a correlation ID on every line

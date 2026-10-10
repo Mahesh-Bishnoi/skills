@@ -4,7 +4,7 @@
 
 The parent initializes `run-metadata.json`, applies the strict pre-reconnaissance budget gate in `SKILL.md`, then creates agent scratch roots and the shared ledger before hunting. If the gate fails, record the incomplete status in metadata and launch no reconnaissance agent. Reconnaissance reads the target and locally available build/configuration state only. It does not contact deployed endpoints, external identity providers, registries, brokers, cloud APIs, or other shared services.
 
-Launch several `research` agents in parallel. They return structured facts to the parent and do not write files.
+Launch up to 3–4 `explore` agents in parallel (read-only, within the worker cap). They return structured facts to the parent and do not write files.
 
 **Agent 1a: Product, stack, and local operation**
 

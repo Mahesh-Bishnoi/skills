@@ -26,12 +26,13 @@ ls ~/.config/opencode/skills 2>/dev/null || true
 ls .opencode/skills 2>/dev/null || true
 ls ~/.agents/skills 2>/dev/null || true
 ls .agents/skills 2>/dev/null || true
+ls .claude/skills 2>/dev/null || true
 ```
 
 Installed means:
 
 - `graphify` CLI present (`graphify --version` prints a version).
-- Local skill: installer output for `--platform opencode` present (check the paths above for a graphify entry, or re-run install to confirm).
+- Local skill: installer output for `--platform opencode` present (check the paths above for a graphify entry — `.claude/skills` counts as a project compatibility source — or re-run install to confirm).
 - Local MCP (optional): `graphify-mcp` on PATH.
 
 If CLI + skill are present at the wanted scope and the user declined MCP, skip to Step 4. If MCP was requested and `graphify-mcp` is also present, skip to Step 4.
@@ -40,7 +41,7 @@ If CLI + skill are present at the wanted scope and the user declined MCP, skip t
 
 Ask only what is missing. Defaults in brackets. Wait for each answer.
 
-1. `Scope: project-local with --project or global (personal) [project-local]?` Project-local commits the registration with the repo for team/CI — read the installer's file list before committing. Global registers the skill for the user only (advertises everywhere — opt-in).
+1. `Scope: project-local with --project or global (personal) [project-local]?` Project-local commits the registration with the repo for team/CI — read the installer's file list before committing. Global registers the skill for the user only (advertises everywhere — opt-in). `uv tool install` / `pipx install` are always per-user global; only `graphify install --platform opencode --project` (and the MCP target file) honor scope.
 2. `Include local stdio MCP server [no]?` Default-off. Opt-in installs the `mcp` extra and wires `graphify-mcp` to the repo's absolute `graphify-out/graph.json` path. GUI clients need the absolute path since their cwd differs from the terminal.
 3. `Confirm install?` The agent must never install software silently. Present the exact commands and get an explicit yes. The human runs them if the agent lacks permission.
 
@@ -75,14 +76,22 @@ If uv reports an existing installation without the extra, use:
 uv tool install --reinstall "graphifyy[mcp]"
 ```
 
-Then configure the OpenCode MCP entry with the repo's absolute graph path (adjust the path to the actual repo root):
+Then configure the OpenCode MCP entry with the repo's absolute graph path (adjust the path to the actual repo root). Target file is the project `opencode.jsonc` (add `--global` for the global opt-in). Prefer the CLI:
 
-```json
+```sh
+opencode mcp add graphify -- graphify-mcp <repo-root>/graphify-out/graph.json
+```
+
+Manual config shape (V2):
+
+```jsonc
 {
-  "mcpServers": {
-    "graphify": {
-      "command": "graphify-mcp",
-      "args": ["<repo-root>/graphify-out/graph.json"]
+  "mcp": {
+    "servers": {
+      "graphify": {
+        "type": "local",
+        "command": ["graphify-mcp", "<repo-root>/graphify-out/graph.json"]
+      }
     }
   }
 }

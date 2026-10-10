@@ -21,6 +21,25 @@ NON_NATIVE_KEYS = {
     "auto-invoke",
     "autoload",
 }
+# Skills intentionally hidden from model discovery; they stop producing the
+# hidden-skill warning but still count as hidden for handoff checks.
+ALLOWED_HIDDEN_SKILLS = {"grill", "project-bootstrap"}
+# Skills installed via /setup (not in this repo) — valid @refs after install.
+ALLOWED_EXTERNAL_SKILLS = {
+    "archify", "drawio-skill", "ui-ux-pro-max", "design-taste-frontend",
+    "design-taste-frontend-v1", "graphify", "agent-browser", "browser-harness",
+}
+# Use-trigger wording required in descriptions (warn-only).
+USE_TRIGGER_RE = re.compile(
+    r"\b(use\s+(only\s+)?when|use\s+on\b|use\s+for\b|load\s+before\b)",
+    re.IGNORECASE,
+)
+MAX_DESCRIPTION_CHARS = 300
+# Reference-doc patterns checked like skill bodies (warn-only for new dirs).
+ABS_PATH_PATTERNS = ("/home/", "/Users/", "](/)", "](/", "%HOME%")
+AT_REF_RE = re.compile(r"(?<![\w/])@([a-z0-9]+(?:-[a-z0-9]+)*)(?!/)")
+THE_SKILL_RE = re.compile(r"the `([A-Za-z0-9][A-Za-z0-9-]*)` skill")
+FENCED_BLOCK_RE = re.compile(r"```.*?```", re.DOTALL)
 
 errors: list[str] = []
 warnings: list[str] = []
@@ -87,6 +106,16 @@ def main() -> int:
         for d in ROOT.iterdir()
         if d.is_dir() and d.name not in RESERVED_TOP and not d.name.startswith(".")
     )
+    skill_ids = {d.name for d in skill_dirs if (d / "SKILL.md").is_file()}
+
+    def _is_hidden(d: Path) -> bool:
+        try:
+            t = (d / "SKILL.md").read_text(encoding="utf-8")
+        except OSError:
+            return False
+        return "opencode/autoinvoke: false" in t or "disable-model-invocation: true" in t
+
+    hidden_ids = {d.name for d in skill_dirs if (d / "SKILL.md").is_file() and _is_hidden(d)}
 
     found_skill = False
     for d in skill_dirs:
@@ -130,7 +159,30 @@ def main() -> int:
 
         body = FRONTMATTER_RE.sub("", text, count=1)
         if "opencode/autoinvoke: false" in text or "disable-model-invocation: true" in text:
-            warn(f"{sid}/SKILL.md: skill is hidden from model discovery (autoinvoke disabled)")
+            if sid not in ALLOWED_HIDDEN_SKILLS:
+                warn(f"{sid}/SKILL.md: skill is hidden from model discovery (autoinvoke disabled)")
+        desc = fm.get("description", "").strip()
+        if desc:
+            if not USE_TRIGGER_RE.search(desc):
+                warn(f"{sid}/SKILL.md: description lacks use-trigger wording (e.g. 'Use when ...')")
+            if len(desc) > MAX_DESCRIPTION_CHARS:
+                warn(f"{sid}/SKILL.md: description is {len(desc)} chars (keep under ~{MAX_DESCRIPTION_CHARS})")
+        if "mcpServers" in text:
+            err(f"{sid}/SKILL.md: `mcpServers` is Claude format; V2 uses `mcp.servers`")
+        # Cross-skill references must resolve (warn-only). Strip fenced blocks
+        # so code samples (JSDoc tags, npm scopes, payloads) don't false-positive.
+        prose = FENCED_BLOCK_RE.sub("", body)
+        for ref in sorted(set(AT_REF_RE.findall(prose))):
+            if ref not in skill_ids and ref not in ALLOWED_EXTERNAL_SKILLS:
+                warn(f"{sid}/SKILL.md: dangling @{ref} reference (no such skill dir)")
+        for ref in sorted(set(THE_SKILL_RE.findall(body))):
+            if ref not in skill_ids and ref not in ALLOWED_EXTERNAL_SKILLS:
+                warn(f"{sid}/SKILL.md: dangling 'the {ref} skill' reference (no such skill dir)")
+        for hid in sorted(hidden_ids):
+            if re.search(rf"(?<![\w/])@{re.escape(hid)}\b", body) and not re.search(
+                rf"ask the user to invoke\s+[`@]*{re.escape(hid)}", body, re.IGNORECASE
+            ):
+                warn(f"{sid}/SKILL.md: hands off to hidden skill @{hid} without asking the user to invoke it")
         # Canonical portable references (~/code/skills, ~/.config/) are allowed;
         # machine-specific absolute paths are not.
         for pat in ("/home/", "/Users/", "](/)", "](/", "%HOME%"):
@@ -148,6 +200,39 @@ def main() -> int:
 
     if not found_skill:
         warn("no skills found yet (no <skill-id>/SKILL.md directories)")
+
+    # Reference and wizard docs are not skills, but they get the same
+    # portability checks as skill bodies (warn-only for these dirs).
+    extra_docs: list[Path] = []
+    for tooling in ("setup", "commands"):
+        tooling_dir = ROOT / tooling
+        if tooling_dir.is_dir():
+            extra_docs.extend(sorted(tooling_dir.rglob("*.md")))
+    for d in skill_dirs:
+        ref_dir = d / "references"
+        if ref_dir.is_dir():
+            extra_docs.extend(sorted(ref_dir.rglob("*.md")))
+    for p in extra_docs:
+        if ".git" in p.parts:
+            continue
+        rel = p.relative_to(ROOT)
+        try:
+            doc = p.read_text(encoding="utf-8")
+        except OSError:
+            continue
+        for pat in ABS_PATH_PATTERNS:
+            if pat in doc:
+                warn(f"{rel}: absolute/personal path reference {pat!r}; use paths relative to the doc")
+                break
+        if "mcpServers" in doc:
+            err(f"{rel}: `mcpServers` is Claude format; V2 uses `mcp.servers`")
+        for m in re.finditer(r"\[[^\]]*\]\(([^)#\s]+)\)", doc):
+            target = m.group(1).strip()
+            if not target or target.startswith(("http://", "https://", "#", "mailto:")):
+                continue
+            if (p.parent / target).exists():
+                continue
+            warn(f"{rel}: broken relative link {target!r}")
 
     for w in warnings:
         print(f"WARN: {w}")

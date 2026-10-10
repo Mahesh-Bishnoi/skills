@@ -1,6 +1,6 @@
 ---
 name: grill
-description: Relentless one-question-at-a-time interview that extracts what the user actually wants and sharpens plans or designs. Use on vague asks or when the user says "grill me", "interview me", "stress-test my thinking", or "are we sure?". Docs (intent, ADRs, glossary) offered on confirmation. User-invoked only.
+description: One-question-at-a-time interview that extracts what the user actually wants and sharpens plans or designs. Use only when the user explicitly says "grill me", "interview me", "stress-test my thinking", or "are we sure?". User-invoked only.
 metadata:
   opencode/autoinvoke: false
 ---

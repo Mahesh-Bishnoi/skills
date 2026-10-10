@@ -1,0 +1,27 @@
+THIRD_PARTY_NOTICES
+
+This repo adapts or references the following MIT-licensed upstream sources.
+Identifiers below are written exactly as cited in the attributing files
+(no upstream URLs appear in those files, so none are reproduced here).
+
+1. addyosmani/agent-skills (MIT)
+   - `security-and-hardening` — inspiration for hardening/SKILL.md (line 10).
+   - `performance-optimization` — adapted in performance/SKILL.md (line 10).
+   - `observability-and-instrumentation` — adapted in observability/SKILL.md (line 10).
+
+2. addyosmani/web-quality-skills (MIT)
+   - `web-quality-audit` — adapted in web-quality-audit/SKILL.md (line 10).
+   - `performance`, `core-web-vitals` — adapted in performance/SKILL.md (line 10)
+     and performance/references/cwv-web.md (line 5).
+   - `accessibility` — adapted in accessibility/SKILL.md (line 10).
+   - `seo` — adapted in seo/SKILL.md (line 10).
+
+3. affaan-m/ECC (MIT, Copyright (c) 2026 Affaan Mustafa)
+   - `springboot-patterns` + `jpa-patterns` — adapted in tech-skills/skills/spring-boot.md (line 49).
+   - `fastapi-patterns` (Pydantic sections) — adapted in tech-skills/skills/pydantic.md (line 45).
+   - `java-coding-standards` — adapted in tech-skills/skills/java.md (line 50).
+   - `python-patterns` + `python-testing` — adapted in tech-skills/skills/python.md (line 45).
+
+4. soujava/agent-skills (MIT, Copyright (c) 2026 Maximillian Arruda)
+   - `spring-boot-server` — informed tech-skills/skills/spring-boot.md (line 49).
+   - `java-conventions` + `java-distiller` — informed tech-skills/skills/java.md (line 50).

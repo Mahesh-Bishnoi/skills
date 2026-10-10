@@ -10,7 +10,6 @@ CSS: < 50KB gzipped
 Images: < 200KB per image (above the fold)
 Fonts: < 100KB total
 API response time: < 200ms (p95)
-Time to Interactive: < 3.5s on 4G
 Lighthouse Performance score: >= 90
 ```
 
@@ -27,8 +26,9 @@ Adjust per product, then enforce — an unenforced budget is a wish.
 ## Enforce in CI
 
 ```bash
-# Bundle size check
-npx bundlesize --config bundlesize.config.json
+# Bundle budget check via the repo's configured checker
+# (e.g. size-limit or Lighthouse CI budgets — pick one, don't mix)
+npx size-limit
 
 # Lighthouse CI
 npx lhci autorun
@@ -48,13 +48,4 @@ Keep in the PR description or a `PERF.md`. The next person (or agent) reads it b
 
 ## Verification
 
-- [ ] Before/after numbers exist (specific numbers, not "faster")
-- [ ] Re-measured the same way as the baseline (same command, same conditions)
-- [ ] Improvement exceeds run-to-run variance, not just the mean
-- [ ] Neutral/worse changes reverted, attempts logged (kept and reverted alike)
-- [ ] Bottleneck identified and addressed; Core Web Vitals in "Good"
-- [ ] Bundle size not significantly increased; no new N+1 queries
-- [ ] New indexes justified by plans before/after; write cost considered
-- [ ] New caches state key inputs, staleness window, and invalidation strategy
-- [ ] User-facing metric has a synthetic budget or field monitor
-- [ ] Existing tests still pass (optimization didn't break behavior)
+Canonical checklist lives in `SKILL.md` ## Verification — follow it there. This file adds budgets, CI enforcement, and the attempt log only.

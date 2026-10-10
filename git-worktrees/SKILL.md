@@ -1,6 +1,6 @@
 ---
 name: git-worktrees
-description: Isolated feature work via git worktrees - create, list, remove, prune, repair when tree is dirty, parallel branches, or urgent fix needed
+description: Isolated feature work via git worktrees. Use when juggling parallel branches, urgent fixes, or dirty trees needing create, list, remove, prune, or repair.
 ---
 
 Use a linked worktree for isolation when the tree is dirty, branches must run in parallel, or an urgent fix can't disturb current work. Detect first. Never nest worktrees.
@@ -24,7 +24,8 @@ One branch = one worktree. Same branch checked out twice fails unless `--force`.
 Default path `.worktrees/<branch>` at repo root. Explicit user path wins. Fallback to sibling `../<repo>-<branch>` on sandbox denial. Target dir must be missing or empty.
 
 ```
-git check-ignore -q .worktrees || { echo ".worktrees/" >> .gitignore; git add .gitignore; git commit -m "ignore worktrees"; }
+git check-ignore -q .worktrees || echo ".worktrees/" >> .gitignore
+# If .gitignore changed, ask the user before staging or committing it — never auto-commit .gitignore changes.
 git worktree add .worktrees/<branch> -b <branch> [<commit-ish>]
 ```
 

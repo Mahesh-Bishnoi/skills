@@ -55,6 +55,8 @@ Only include `aggregateRating` when reviews are visible on the page.
 
 ## FAQ
 
+> Note: Google stopped showing FAQ rich results — do not add FAQ schema to chase ranking or rich-result display. Keep the starter below only where an FAQ page needs valid structured syntax for other consumers, and never promise visibility from it.
+
 ```html
 <script type="application/ld+json">
 {

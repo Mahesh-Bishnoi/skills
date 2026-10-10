@@ -1,6 +1,6 @@
 ---
 name: project-bootstrap
-description: Scaffold or refresh a consumer project's AGENTS.md from the team template
+description: Scaffold or refresh a consumer project's AGENTS.md from the team template. Use when starting a project or refreshing stale project guidance.
 metadata:
   opencode/autoinvoke: false
 ---

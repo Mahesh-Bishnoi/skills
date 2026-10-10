@@ -4,7 +4,7 @@ Bootstraps the upstream Archify skill, then gets out of the way. Vendors nothing
 
 Upstream:
 
-- `archify`: validated architecture, workflow, sequence, dataflow, and lifecycle diagrams as standalone HTML. Installed via `npx skills add tt-a1i/archify` (project-local) or with `-g` (global opt-in). Docs at https://github.com/tt-a1i/archify and https://archify.si
+- `archify`: validated architecture, workflow, sequence, dataflow, and lifecycle diagrams as standalone HTML. Installed via `npx -y skills add tt-a1i/archify -a opencode --copy -y` (project-local) or with `-g` (global opt-in). Without `-a opencode` the installer may prompt or write to other agents' folders. Docs at https://github.com/tt-a1i/archify and https://archify.si
 
 Project `AGENTS.md` and existing codebase conventions override this file.
 
@@ -19,11 +19,12 @@ ls ~/.config/opencode/skills 2>/dev/null || true
 ls .opencode/skills 2>/dev/null || true
 ls ~/.agents/skills 2>/dev/null || true
 ls .agents/skills 2>/dev/null || true
+ls .claude/skills 2>/dev/null || true
 ```
 
 Installed means:
 
-- `archify`: an `archify` directory under any of the above skills dirs, containing `SKILL.md` and `bin/archify.mjs`.
+- `archify`: an `archify` directory under any of the above skills dirs (`.claude/skills` counts as a project compatibility source), containing `SKILL.md` and `bin/archify.mjs`.
 - Note whether the copy is project-local (`.opencode/skills`) or global (`~/.config/opencode/skills`). If a stale global copy exists and scope is project-local, offer to remove the global copy so it stops advertising in every session.
 
 If present at the wanted scope, skip to Step 4. Optionally verify with `node <installed-path>/bin/archify.mjs doctor` using the actual path found above.
@@ -40,15 +41,15 @@ Ask only what is missing. Defaults in brackets. Wait for each answer.
 Project-local (default) — run from the project root:
 
 ```sh
-npx skills add tt-a1i/archify
+npx -y skills add tt-a1i/archify -a opencode --copy -y
 ```
 
-Confirm the `archify` directory landed under `.opencode/skills` (or `.agents/skills`).
+Confirm the `archify` directory landed under `.opencode/skills` or `.agents/skills` (universal, also discovered by OpenCode) — check both.
 
 Global opt-in variant (only if Step 2.1 was global):
 
 ```sh
-npx skills add tt-a1i/archify -g
+npx -y skills add tt-a1i/archify -a opencode --copy -y -g
 ```
 
 Verify after install:

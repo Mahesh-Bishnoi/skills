@@ -39,7 +39,7 @@ function unit(overrides = {}) {
     starting_paths: ["src/router.ts", "src/authz.ts"],
     ordinary_attack_class_block: "ATTACK-CLASSES.md#Access control",
     selected_companion_blocks: [],
-    excluded_blocks: [{ block: "WEB-PROTOCOL-AND-AUTH.md#Cache behavior", reason: "The route is not cached." }],
+    excluded_blocks: [{ block: "WEB-PROTOCOL-AND-AUTH.md#Cache deception and private-response caching", reason: "The route is not cached." }],
     prior_status: "new",
     attempts: [],
     wave: 1,
@@ -153,7 +153,7 @@ test("text preflight ignores structural characters and escapes inside strings", 
   const value = unit({
     surface: "Route \\ slash [list] {object}, colon: quoted \"value\"",
     excluded_blocks: [{
-      block: "COMPANION.md#Literal [brackets] {braces}",
+      block: "WEB-PROTOCOL-AND-AUTH.md#Cache deception and private-response caching",
       reason: "The text contains a backslash \\ before an escaped \"quote\".",
     }],
   });
@@ -250,12 +250,12 @@ test("requires lexicographic order", () => {
 
 test("validates assignment block maps", () => {
   const overlap = unit({
-    selected_companion_blocks: ["AI-AND-LLM.md#Tool calls"],
-    excluded_blocks: [{ block: "AI-AND-LLM.md#Tool calls", reason: "Claimed irrelevant." }],
+    selected_companion_blocks: ["AI-AND-LLM.md#Tool-argument injection into a downstream sink"],
+    excluded_blocks: [{ block: "AI-AND-LLM.md#Tool-argument injection into a downstream sink", reason: "Claimed irrelevant." }],
   });
   assert(errorsFor([overlap]).some((error) => error.includes("also selected")));
 
-  const noReason = unit({ excluded_blocks: [{ block: "AI-AND-LLM.md#Tool calls", reason: "" }] });
+  const noReason = unit({ excluded_blocks: [{ block: "AI-AND-LLM.md#Tool-argument injection into a downstream sink", reason: "" }] });
   assert(errorsFor([noReason]).some((error) => error.includes("reason")));
 });
 

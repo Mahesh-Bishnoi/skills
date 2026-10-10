@@ -28,11 +28,11 @@ LCP ≤ 2.5s, INP ≤ 200ms, CLS ≤ 0.1. Needs-improvement: LCP ≤ 4.0s, INP �
 
 ```html
 <script type="speculationrules">
-{"prerender": [{"where": {"href_matches": "/*"}, "eagerness": "moderate"}]}
+{"prerender": [{"where": {"href_matches": "/products/*"}, "eagerness": "moderate"}]}
 </script>
 ```
 
-Measure hit rate, bytes, and server cost before widening scope. A wrong prerender costs roughly a full page load.
+Scope prerendering to safe, idempotent URLs only — never prerender logout, cart, checkout, or account URLs. Measure hit rate, bytes, and server cost before widening scope. A wrong prerender costs roughly a full page load.
 
 ## INP (diagnose by phase)
 
@@ -54,6 +54,6 @@ Use field attribution or a trace to identify the shifted node and its trigger; t
 
 ## Framework quick mapping
 
-- Next.js: `next/image` with `priority` for LCP; `dynamic()` for INP; Image dimensions handle CLS.
+- Next.js: `next/image` with `fetchPriority="high"` for the LCP image; `dynamic()` for INP; image dimensions handle CLS.
 - React: preload LCP image with `fetchpriority`; `useTransition` for INP; explicit dimensions for CLS.
 - Vue/Nuxt: `NuxtImg` preload/eager for LCP; async components for INP; `aspect-ratio` CSS for CLS.

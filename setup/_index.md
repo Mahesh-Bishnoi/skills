@@ -23,6 +23,7 @@ Checkout location is `~/code/skills` by default — ask the user if it isn't the
 ## Rules for `/setup`
 
 - Default scope is project-local (`.opencode/skills` in the current repo, committed for team/CI). Global (`-g` / `~/.config/opencode/skills`) only on explicit opt-in — global installs advertise the installed skill in every session.
+- CLI installs via `npm install -g` / `uv tool install` are per-user global by nature; Scope only controls skill file placement and `uipro init` / `graphify install --project` / MCP target file (project `opencode.jsonc` vs global with `--global`).
 - Default-off everywhere: MCP entries, Cloud auth, recordings. Ask once, never enable silently.
 - Never run an install without an explicit yes. Present exact commands first; the human runs them if the agent lacks permission.
 - On failure report output verbatim and stop.

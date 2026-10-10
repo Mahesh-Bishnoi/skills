@@ -1,6 +1,6 @@
 ---
 name: performance
-description: Optimizes measured performance bottlenecks across frontend, backend, queries, and databases. Use when performance budgets or SLAs exist, when slowness or regressions are reported, when Core Web Vitals need improvement, or when profiling points at N+1 queries, indexes, caching, pools, bundles, or rendering.
+description: Optimizes measured performance bottlenecks across frontend, backend, queries, and databases. Use when budgets/SLAs exist, slowness or regressions are reported, Core Web Vitals need work, or profiling points at N+1, indexes, caching, pools, bundles, or rendering.
 ---
 
 # Performance
@@ -172,7 +172,7 @@ A fix is a hypothesis until re-measured.
 Guard the user-facing metric that justified the fix (LCP, INP, p95 latency), not every available number. Two layers for user-facing surfaces:
 
 - **Synthetic CI gate:** performance budget on reproducible measurements; use medians/trends so normal variance doesn't make the gate flaky.
-- **Field monitoring:** alert on meaningful p75 movement in RUM; use attributed `web-vitals` data to locate causes (see `observability` §4–§6). Treat CrUX's rolling window as confirmation, not an immediate alert.
+- **Field monitoring:** alert on meaningful p75 movement in RUM using attributed `web-vitals` data (see [references/cwv-web.md](references/cwv-web.md)); feed the trend into `observability` §6 alerting. Treat CrUX's rolling window as confirmation, not an immediate alert.
 
 Budgets and CI enforcement live in [references/checklist.md](references/checklist.md).
 
@@ -212,7 +212,7 @@ Budgets and CI enforcement live in [references/checklist.md](references/checklis
 
 ## Verification
 
-After any performance change, walk [references/checklist.md](references/checklist.md):
+Canonical checklist (budgets and CI enforcement live in [references/checklist.md](references/checklist.md)):
 
 - [ ] Before/after numbers exist; re-measured the same way as the baseline
 - [ ] Improvement exceeds run-to-run variance, not just the mean

@@ -4,7 +4,7 @@ Bootstraps the upstream drawio-skill, then gets out of the way. Vendors nothing 
 
 Upstream:
 
-- `drawio-skill`: natural language, code, Terraform/K8s, SQL, OpenAPI, AsyncAPI, Protobuf, and GraphQL sources into editable `.drawio` diagrams, plus sync, views, test, review, query, what-if, story, and HTML/PPTX/Mermaid exports. Installed via `npx skills add Agents365-ai/drawio-skill` (project-local) or with `-g` (global opt-in). Docs at https://github.com/Agents365-ai/drawio-skill
+- `drawio-skill`: natural language, code, Terraform/K8s, SQL, OpenAPI, AsyncAPI, Protobuf, and GraphQL sources into editable `.drawio` diagrams, plus sync, views, test, review, query, what-if, story, and HTML/PPTX/Mermaid exports. Installed via `npx -y skills add Agents365-ai/drawio-skill -a opencode --copy -y` (project-local) or with `-g` (global opt-in). Without `-a opencode` the installer may prompt or write to other agents' folders (`.agents/skills/`); with `-a opencode` it lands where OpenCode discovers it. Docs at https://github.com/Agents365-ai/drawio-skill
 - Core workflows are stdlib-only offline on `python3`. Native export needs the draw.io desktop CLI (v30+ recommended for Mermaid conversion and ELK layout). Graphviz `dot` is optional for autolayout. Upstream CLI install docs live in the upstream repo (`docs/INSTALL_CLI.md`) — this file points there, it never installs the CLI itself.
 - Optional local stdio MCP: `scripts/diagramctl_mcp.py` inside the installed skill (stdlib-only, no extra package). Docs in `skills/drawio-skill/references/mcp.md` in https://github.com/Agents365-ai/drawio-skill.
 
@@ -24,11 +24,12 @@ ls ~/.config/opencode/skills 2>/dev/null || true
 ls .opencode/skills 2>/dev/null || true
 ls ~/.agents/skills 2>/dev/null || true
 ls .agents/skills 2>/dev/null || true
+ls .claude/skills 2>/dev/null || true
 ```
 
 Installed means:
 
-- `drawio-skill`: a `drawio-skill` directory under any of the above skills dirs, containing `SKILL.md` and `scripts/diagramctl.py`.
+- `drawio-skill`: a `drawio-skill` directory under any of the above skills dirs (`.claude/skills` counts as a project compatibility source), containing `SKILL.md` and `scripts/diagramctl.py`.
 - Note whether the copy is project-local or global. If a stale global copy exists and scope is project-local, offer to remove it so it stops advertising in every session.
 
 If present at the wanted scope, skip to Step 4. Optionally verify with `python3 <installed-path>/scripts/diagramctl.py doctor` using the actual path found above. Report `drawio --version` and `dot -V` separately as export/layout readiness, not as skill presence.
@@ -46,15 +47,15 @@ Ask only what is missing. Defaults in brackets. Wait for each answer.
 Project-local (default) — run from the project root:
 
 ```sh
-npx skills add Agents365-ai/drawio-skill
+npx -y skills add Agents365-ai/drawio-skill -a opencode --copy -y
 ```
 
-Confirm the `drawio-skill` directory landed under `.opencode/skills` (or `.agents/skills`).
+Confirm the `drawio-skill` directory landed under `.opencode/skills` (or `.agents/skills` — the universal target, also discovered by OpenCode — if the installer used it; check both).
 
 Global opt-in variant (only if Step 2.1 was global):
 
 ```sh
-npx skills add Agents365-ai/drawio-skill -g
+npx -y skills add Agents365-ai/drawio-skill -a opencode --copy -y -g
 ```
 
 Verify after install:
@@ -65,14 +66,22 @@ python3 <installed-path>/scripts/diagramctl.py doctor
 
 Draw.io desktop CLI (point to upstream, do not install here): follow the upstream `docs/INSTALL_CLI.md` recipe in https://github.com/Agents365-ai/drawio-skill for the user's platform, then verify with `drawio --version` (v30+ recommended). Graphviz is optional for autolayout (`dot -V`).
 
-Optional MCP extra (only if Step 2.2 was yes): add an MCP entry pointing at the installed script path (adjust the path to the actual install location found above):
+Optional MCP extra (only if Step 2.2 was yes): add an MCP entry pointing at the installed script path (adjust the path to the actual install location found above). Target file is the project `opencode.jsonc` (add `--global` to the CLI for the global opt-in). Prefer the CLI because it preserves unrelated config:
 
-```json
+```sh
+opencode mcp add drawio-skill -- python3 <installed-path>/scripts/diagramctl_mcp.py
+```
+
+Manual config shape (V2, `mcp.servers`):
+
+```jsonc
 {
-  "mcpServers": {
-    "drawio-skill": {
-      "command": "python3",
-      "args": ["<installed-path>/scripts/diagramctl_mcp.py"]
+  "mcp": {
+    "servers": {
+      "drawio-skill": {
+        "type": "local",
+        "command": ["python3", "<installed-path>/scripts/diagramctl_mcp.py"]
+      }
     }
   }
 }
@@ -80,7 +89,7 @@ Optional MCP extra (only if Step 2.2 was yes): add an MCP entry pointing at the 
 
 Claude Code alternative: `claude mcp add drawio-skill -- python3 <installed-path>/scripts/diagramctl_mcp.py` with the same path.
 
-Re-run the install command later to refresh to the latest stable; for manual `git clone` installs, `git pull` from the install directory instead. If a command fails, report the output verbatim and stop. Common causes: missing `python3` (user installs from python.org or OS package manager — agent must ask, never install), missing `node`/`npx` (user installs Node LTS from nodejs.org or OS package manager — agent must ask, never install), or no network for npx.
+Re-run the `npx -y skills add Agents365-ai/drawio-skill -a opencode --copy -y` command later (same flags, add `-g` for global) to refresh to the latest stable; for manual `git clone` installs, `git pull` from the install directory instead. If a command fails, report the output verbatim and stop. Common causes: missing `python3` (user installs from python.org or OS package manager — agent must ask, never install), missing `node`/`npx` (user installs Node LTS from nodejs.org or OS package manager — agent must ask, never install), or no network for npx.
 
 ## Step 4 — Hand off (no duplicate work)
 

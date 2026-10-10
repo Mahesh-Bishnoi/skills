@@ -1,6 +1,6 @@
 ---
 name: hardening
-description: Hardens code against vulnerabilities while building. Use when handling user input, authentication, sessions, secrets, file uploads, external APIs, server-side fetches, dependencies, personal data, or LLM output. Use when building any feature that accepts untrusted data across web, API, CLI, library, daemon, or integration boundaries. Use for OWASP Top Ten safety, supply-chain audit triage, and privacy (GDPR/CCPA) minimization.
+description: Hardens code against vulnerabilities while building. Use when handling user input, auth, sessions, secrets, uploads, external APIs, server-side fetches, dependencies, personal data, or LLM output. Use for OWASP safety, supply-chain triage, and privacy minimization.
 ---
 
 # Hardening
@@ -21,7 +21,7 @@ Source: inspired by `addyosmani/agent-skills` (`security-and-hardening`, MIT). R
 
 **NOT for:**
 
-- Deep audit of an existing codebase — hand off to `security-audit` (this skill builds controls in; that skill finds missing ones)
+- Deep audit of an existing codebase — ask the user to invoke `@security-audit` (this skill builds controls in; that skill finds missing ones)
 - Diagnosing an active bug or exploit — use `debug` (this skill prevents the next one)
 - Telemetry design beyond redaction — see `observability` (this skill covers only: no secrets/PII in logs)
 
@@ -44,7 +44,7 @@ Controls without a threat model are guesses. Spend five minutes thinking like an
 
 4. **Write abuse cases next to use cases.** For each feature ask "how would I misuse this?" — then make that your first test.
 
-If you cannot name the trust boundaries, you are not ready to secure the feature. That is OWASP **A04: Insecure Design** — most breaches begin in design, not code.
+If you cannot name the trust boundaries, you are not ready to secure the feature. That is OWASP **A06:2025 Insecure Design** (ex-A04:2021) — most breaches begin in design, not code.
 
 ## The Three-Tier Boundary System
 
@@ -93,7 +93,7 @@ Summaries below; concrete snippets live in [references/hardening-patterns.md](re
 
 - Parameterize every query. Never build SQL, NoSQL, LDAP, or shell commands from input strings. For shells, prefer `execFile` / arg arrays over string commands.
 - Encode output through the framework's auto-escaping. If raw HTML is unavoidable, sanitize with an allowlist sanitizer first.
-- Check **authorization on every request**, not just authentication: the caller must own, or be permitted on, the specific resource (A01, IDOR). Fail closed.
+- Check **authorization on every request**, not just authentication: the caller must own, or be permitted on, the specific resource (A01:2025, IDOR). Fail closed.
 
 Patterns: [Injection](references/hardening-patterns.md#injection), [XSS](references/hardening-patterns.md#cross-site-scripting-xss), [Access control](references/hardening-patterns.md#broken-access-control).
 

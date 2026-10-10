@@ -30,5 +30,5 @@
 
 - Consumed automatically via the global `skills` entry pointing at `~/code/skills`. No per-project setup needed.
 - Optional tooling via `/setup` (diagrams, browser automation, design taste, code graph): installed project-local into `.opencode/skills/` so it advertises only here. Record chosen tools + scope below.
-- Pinned copies (only if some skill must ship with this repo): `<none | .opencode/skills/<id>/ + why>`
+- Pinned copies (only if some skill must ship with this repo): `<none | .opencode/skills/<id>-pinned/ + why — use a different ID, explicit skills entries outrank .opencode/skills on duplicates>`
 - Always-load rules for this project: `<none | e.g. always load <id> when touching <area>>`

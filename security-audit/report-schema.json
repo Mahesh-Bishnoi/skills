@@ -342,6 +342,7 @@
           },
           "validation_plan": {
             "type": "object",
+            "minProperties": 1,
             "properties": {
               "local": {
                 "type": "string",

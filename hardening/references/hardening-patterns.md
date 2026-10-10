@@ -2,7 +2,11 @@
 
 Concrete implementations of the controls in `SKILL.md`. Pick the section you need; each is self-contained. Examples show Python and TypeScript — apply the same invariant in any stack.
 
+Category IDs follow OWASP Top 10:2025: A01 Broken Access Control (now includes SSRF, ex-A10:2021), A02 Security Misconfiguration (ex-A05:2021), A03 Software Supply Chain Failures (expands ex-A06:2021 Vulnerable and Outdated Components), A04 Cryptographic Failures (ex-A02:2021), A05 Injection incl. XSS (ex-A03:2021), A06 Insecure Design (ex-A04:2021), A07 Authentication Failures (ex-A07:2021 Identification and Authentication Failures), A08 Software or Data Integrity Failures (unchanged), A09 Security Logging and Alerting Failures (ex-Monitoring), A10 Mishandling of Exceptional Conditions (new).
+
 ## Injection
+
+A05:2025 (ex-A03:2021).
 
 Parameterized queries only. Never interpolate input into query or command strings.
 
@@ -46,6 +50,8 @@ NoSQL, LDAP, and template languages need the same treatment: use the driver's pa
 
 ## Cross-Site Scripting (XSS)
 
+Part of A05:2025 Injection.
+
 Rely on framework auto-escaping; never bypass it for user or LLM-produced data.
 
 ```typescript
@@ -62,6 +68,8 @@ const clean = sanitizeHtml(comment, { allowedTags: ['b', 'i', 'code'] });
 Python templates (Jinja2) keep autoescaping on; Go `html/template` over `text/template` for HTML. Encode for the sink: HTML body, attribute, JS string, URL, and CSV each need their own encoder.
 
 ## Broken Access Control
+
+A01:2025 (unchanged at #1; now also covers SSRF, ex-A10:2021).
 
 Check ownership or permission on the specific resource on every request. Authentication alone is not enough (IDOR).
 
@@ -81,12 +89,16 @@ Deny by default; allowlist actions per role; log authorization failures without 
 
 ## Broken Authentication
 
+A07:2025 Authentication Failures (ex-A07:2021 Identification and Authentication Failures).
+
 ```python
 import bcrypt
 # Store
 pw_hash = bcrypt.hashpw(password.encode(), bcrypt.gensalt(rounds=12))
-# Verify (constant-time compare inside checkpw)
-assert bcrypt.checkpw(password.encode(), pw_hash)
+# Verify (constant-time compare inside checkpw). Explicit raise:
+# `assert` is dropped under `python -O` and must never enforce security checks.
+if not bcrypt.checkpw(password.encode(), pw_hash):
+    raise ValueError("invalid credentials")
 ```
 
 Session cookies (Express example):
@@ -101,6 +113,8 @@ app.use(session({
 Enforce strict rate limits and lockout on login; never enumerate users ("invalid credentials" for both bad name and bad password); rotate session IDs after login.
 
 ## Security Misconfiguration
+
+A02:2025 (ex-A05:2021).
 
 Apply framework security headers on every HTTP response:
 
@@ -122,6 +136,8 @@ app.use(cors({ origin: config.allowedOrigins, credentials: true }));
 Disable debug endpoints, directory listings, and verbose banners in production. Daemons/CLI equivalents: restrictive umask (`027`), socket modes (`0700` dirs, `0600` secrets), no debug flags by default.
 
 ## Sensitive Data Exposure
+
+Under A04:2025 Cryptographic Failures (ex-A02:2021).
 
 Strip sensitive fields before any response — HTTP, CLI `--json`, logs, or error payloads:
 
@@ -180,19 +196,24 @@ Serve uploads from a separate origin/path with `Content-Disposition: attachment`
 
 ## Server-Side Request Forgery (SSRF)
 
+Covered by A01:2025 Broken Access Control (ex-A10:2021).
+
 ```python
 import ipaddress, socket
 from urllib.parse import urlparse
 
-def assert_safe_fetch(url: str, allow_hosts: set[str]) -> str:
+def check_safe_fetch(url: str, allow_hosts: set[str]) -> str:
     u = urlparse(url)
-    assert u.scheme in ("https",), "scheme not allowed"
-    assert u.hostname in allow_hosts, "host not allowlisted"
+    if u.scheme not in ("https",):
+        raise ValueError("scheme not allowed")
+    if u.hostname not in allow_hosts:
+        raise ValueError("host not allowlisted")
     infos = socket.getaddrinfo(u.hostname, u.port or 443, type=socket.SOCK_STREAM)
     for info in infos:  # check ALL records, v4 and v6
         ip = ipaddress.ip_address(info[4][0])
-        assert not (ip.is_private or ip.is_loopback or ip.is_link_local
-                    or ip.is_reserved or ip.is_multicast), f"blocked address {ip}"
+        if (ip.is_private or ip.is_loopback or ip.is_link_local
+                or ip.is_reserved or ip.is_multicast):
+            raise ValueError(f"blocked address {ip}")
     assert_no_redirect_policy(url)  # forbid redirects or re-check each hop
     return url
 ```
@@ -203,14 +224,26 @@ Notes: `169.254.169.254` (cloud metadata) is link-local and must be rejected. DN
 
 ```python
 from pathlib import Path
+import shutil
 
 def safe_delete(root: Path, claimed: str, ownership_marker: str) -> None:
-    target = (root / claimed).resolve()  # resolve symlinks first
-    assert target.is_relative_to(root.resolve()), "outside allowlisted root"
-    assert len(target.relative_to(root.resolve()).parts) >= 1 + 1, "must be below root"
+    # Explicit raises throughout: `assert` is dropped under `python -O`.
+    root_r = root.resolve()  # resolve once; the allowlisted root
+    raw = root_r / claimed
+    if raw.is_symlink():
+        # Checked on the UNRESOLVED path. After resolve() below the link is
+        # gone, so testing target.is_symlink() there would be dead code.
+        raise ValueError("symlink path not allowed")
+    target = raw.resolve()  # resolve symlinks first
+    if not target.is_relative_to(root_r):
+        raise ValueError("outside allowlisted root")
+    if len(target.relative_to(root_r).parts) < 1:
+        raise ValueError("must be at least one level below allowlisted root")
     marker = (target / ".owner").read_text()  # ownership evidence, read pre-op
-    assert marker.strip() == ownership_marker, "ownership not proven"
-    assert target.is_dir() and not target.is_symlink()
+    if marker.strip() != ownership_marker:
+        raise PermissionError("ownership not proven")
+    if not target.is_dir() or target.is_symlink():
+        raise ValueError("not a real directory")
     shutil.rmtree(target)
 ```
 
@@ -245,16 +278,18 @@ SESSION_SECRET=change-me
 *.key
 ```
 
-Before every commit: `git diff --cached --name-only` plus `git diff --cached -S 'sk-' -S 'AKIA' -- .` (extend with your secret prefixes). **A secret that reaches a remote is compromised: rotate it first, then purge history** (`git filter-repo` / provider revocation), never the reverse.
+Before every commit: `git diff --cached --name-only` plus one pattern per command — `git diff --cached -S 'sk-' -- .` and separately `git diff --cached -S 'AKIA' -- .` (git keeps only the last `-S`, so combining them silently drops all but one). Extend with your secret prefixes. **A secret that reaches a remote is compromised: rotate it first, then purge history** (`git filter-repo` / provider revocation), never the reverse.
 
 ## Dependency Audit Triage
 
-1. `npm audit --omit=dev` / `pip-audit` / `cargo audit` / `govulncheck` against the **committed lockfile**, before every release.
-2. Triage critical/high by reachability: is the vulnerable function on your runtime, build, test, or deploy path? Unreachable dev-only findings are lower priority but still recorded.
+A03:2025 Software Supply Chain Failures (expands ex-A06:2021 Vulnerable and Outdated Components).
+
+1. `npm audit` (all workspaces — never `--omit=dev`, which hides build/test dependency problems) / `pip-audit` / `cargo audit` / `govulncheck` against the **committed lockfile**, before every release.
+2. Triage critical/high by reachability: is the vulnerable function on your runtime, build, test, or deploy path? Reachable findings fix first regardless of path; unreachable ones are still recorded.
 3. Fix by minimal safe upgrade; read the changelog; test. Never `--force` across declared ranges automatically.
 4. Document deferrals: finding ID, why unreachable or why delayed, review date.
 
-New-package review (audits miss fresh malice): check ownership, maintenance cadence, release age, provenance/signatures (`npm audit signatures` where supported), and lockfile diff scope. Inspect pending install scripts before approval (`npm pkg get scripts` on the candidate, `packageManager` pinning, `onlyBuiltDependencies` / `neverBuiltDependencies` policy committed).
+New-package review (audits miss fresh malice): check ownership, maintenance cadence, release age, provenance/signatures (`npm audit signatures` where supported), and lockfile diff scope. Inspect pending install scripts before approval (`npm view <pkg> scripts dist.tarball` on the candidate about to install — `npm pkg get` only reads the local workspace's `package.json`, so it cannot vet a package you have not installed — plus `packageManager` pinning, `onlyBuiltDependencies` / `neverBuiltDependencies` policy committed).
 
 ## Data Classification
 

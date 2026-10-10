@@ -25,12 +25,13 @@ ls ~/.config/opencode/skills 2>/dev/null || true
 ls .opencode/skills 2>/dev/null || true
 ls ~/.agents/skills 2>/dev/null || true
 ls .agents/skills 2>/dev/null || true
+ls .claude/skills 2>/dev/null || true
 ```
 
 Installed means:
 
 - `browser-harness` CLI present (`browser-harness --version` prints a version, or `--doctor` runs).
-- Runtime skill: a `browser-harness` directory under any of the above skills dirs, containing `SKILL.md`.
+- Runtime skill: a `browser-harness` directory under any of the above skills dirs (`.claude/skills` counts as a project compatibility source), containing `SKILL.md`.
 - Note whether the skill copy is project-local or global. If a stale global copy exists and scope is project-local, offer to remove it so it stops advertising in every session.
 
 If CLI + skill are present at the wanted scope and the user previously declined MCP/Cloud, skip to Step 4. If MCP was requested and the OpenCode MCP entry for `browser-harness` already exists, skip to Step 4.
@@ -39,7 +40,7 @@ If CLI + skill are present at the wanted scope and the user previously declined 
 
 Ask only what is missing. Defaults in brackets. Wait for each answer.
 
-1. `Scope: project-local (this repo) or global (all projects) [project-local]?` Project-local writes to `.opencode/skills` in the current repo (commit for team/CI). Global writes to the shared skills dir — opt-in only.
+1. `Scope: project-local (this repo) or global (all projects) [project-local]?` Project-local writes to `.opencode/skills` in the current repo (commit for team/CI). Global writes to the shared skills dir — opt-in only. `uv tool install` is always per-user global; only the skill file placement (and MCP target file) honors scope.
 2. `Enable local browser recordings [no]?` Fresh installs do not record. Preserve an existing `(config)` preference on upgrades instead of asking again.
 3. `Include MCP server entry [no]?` Default-off. Opt-in wires `browser-harness-mcp` into OpenCode over stdio.
 4. `Authenticate Browser Use Cloud [no]?` Default-off. Only needed for parallel/isolated/headless cloud browsers; local Chrome needs no API key.
@@ -85,14 +86,22 @@ Chrome permission (first local connection only):
 
 On macOS, if Chrome shows a per-connection Allow sheet, keep the original command running and call `browser-harness mac-approve` in a second shell call with the same `BU_NAME` (omit `BU_NAME` for the default daemon). On Linux/Windows, ask the user to click Allow; their click completes the handshake.
 
-Optional MCP entry (only if Step 2.3 was yes):
+Optional MCP entry (only if Step 2.3 was yes). Target file is the project `opencode.jsonc` (add `--global` for the global opt-in). Prefer the CLI:
 
-```json
+```sh
+opencode mcp add browser-harness -- uvx --from "browser-harness[mcp]" browser-harness-mcp
+```
+
+Manual config shape (V2):
+
+```jsonc
 {
-  "mcpServers": {
-    "browser-harness": {
-      "command": "uvx",
-      "args": ["--from", "browser-harness[mcp]", "browser-harness-mcp"]
+  "mcp": {
+    "servers": {
+      "browser-harness": {
+        "type": "local",
+        "command": ["uvx", "--from", "browser-harness[mcp]", "browser-harness-mcp"]
+      }
     }
   }
 }

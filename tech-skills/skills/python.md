@@ -12,16 +12,16 @@ Any Python implementation task (language-level idioms, packaging, layout, pytest
 
 ## Conventions
 
-- Target Python 3.9+; use builtin generics (`list[str]`, `dict[str, int]`), not `typing.List/Dict`.
-- Annotate all function signatures; keep `pyproject.toml` with `requires-python`, dev extras (pytest, ruff/black, mypy).
+- Target Python 3.10+; use builtin generics (`list[str]`, `dict[str, int]`), not `typing.List/Dict`.
+- Annotate all function signatures; keep `pyproject.toml` with `requires-python`, dev extras (pytest, ruff, mypy).
 - Prefer EAFP (try/except) over look-before-you-leap; catch specific exceptions and chain with `raise ... from e`.
 - Manage resources with `with` / `@contextmanager`; never manual open/close.
 - Use list comprehensions for simple transforms, generator expressions/functions for large data (`sum(x*x for x in ...)`).
 - Model data with `@dataclass` (validate in `__post_init__`) or `NamedTuple` for immutable values.
 - Decorators must use `functools.wraps`; import order stdlib → third-party → local (isort).
-- Layout: `src/<pkg>/{api,models,utils}`, `tests/` with `conftest.py`, `pyproject.toml` at root.
-- Tooling: `ruff check .`, `black .`, `mypy .` (with `disallow_untyped_defs`), `pytest --cov=<pkg>`.
-- Testing (TDD red-green-refactor, 80%+ coverage): fixtures with `yield` for setup/teardown in `conftest.py`; `@pytest.mark.parametrize` for variants; `unittest.mock.patch` for boundaries; `pytest-asyncio` for async code.
+- Layout: `src/<pkg>/` organized by feature/domain (never a `utils/` dumping ground — see `clean-code` §§4, 10), `tests/` with `conftest.py`, `pyproject.toml` at root.
+- Tooling: `ruff check .`, `ruff format .`, `mypy .` (with `disallow_untyped_defs`), `pytest --cov=<pkg>`.
+- Testing (TDD red-green-refactor, 80%+ coverage): fixtures with `yield` for setup/teardown in `conftest.py`; `@pytest.mark.parametrize` for variants; prefer fakes over mocks at boundaries (see `clean-code` §7); `pytest-asyncio` for async code.
 
 ```python
 def first(items: list[str]) -> str | None:

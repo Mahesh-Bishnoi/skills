@@ -1,6 +1,6 @@
 ---
 name: web-quality-audit
-description: Runs an evidence-led web quality audit across performance, accessibility, SEO, and best practices. Use when audit my site, review web quality, run lighthouse audit, or check page quality is requested.
+description: Runs an evidence-led web quality audit across performance, accessibility, SEO, and best practices. Use when a multi-category Lighthouse audit, a pre-launch quality gate, or triage of which category blocks release is requested.
 ---
 
 # Web Quality Audit
@@ -46,11 +46,12 @@ Notes: DevTools `lighthouse_audit` intentionally excludes performance — use th
 
 ## What to check (delegate, don't duplicate)
 
-- **Performance.** Field p75 first (CrUX or first-party RUM), then trace insights for the failing metric. See `performance` and its `references/cwv-web.md` for LCP/INP/CLS diagnosis. Never compare a single lab value directly with a field p75.
-- **Accessibility.** Automated failures plus keyboard walk, focus visibility, form errors, and one screen-reader pass for high-stakes flows. See `accessibility`.
-- **SEO.** Crawl/index config (`robots.txt`, sitemap, canonical, headers) plus rendered metadata and structured-data eligibility. Never promise ranking changes. See `seo`.
-- **Best practices.** HTTPS/mixed content, vulnerable dependencies, deprecated APIs, valid doctype and charset, clean console. Security findings that cross a trust boundary belong in `security-audit`, not here.
-- **Agentic browsing.** Accessibility-tree exposure, valid WebMCP tools when present, optional `llms.txt`. Report as agent-readability only — never as SEO or AI-citation evidence.
+- **Performance.** See `performance` (and its `references/cwv-web.md`) for field-p75-first diagnosis via trace insights.
+- **Accessibility.** See `accessibility` for automated failures plus keyboard, focus, form-error, and screen-reader checks.
+- **SEO.** See `seo` for crawl/index config, rendered metadata, and structured-data eligibility (never promise ranking changes).
+- **Best practices.** HTTPS/mixed content, vulnerable dependencies, deprecated APIs, valid doctype and charset, clean console. Findings that cross a trust boundary: see `security-audit`; launch-hardening concerns: see `hardening`.
+- **Telemetry.** Gaps in RUM, logging, or alerting surfaced by the audit: see `observability`.
+- **Agentic browsing.** Report accessibility-tree exposure and optional `llms.txt` as agent-readability only — never as SEO or AI-citation evidence.
 
 ## Severity
 

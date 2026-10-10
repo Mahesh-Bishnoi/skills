@@ -24,6 +24,7 @@ const SUPPORTED_KEYWORDS = new Set([
   "minimum",
   "minItems",
   "minLength",
+  "minProperties",
   "oneOf",
   "pattern",
   "properties",
@@ -305,7 +306,7 @@ function collectSchemaErrors(schema, location = "schema") {
       }
     }
     if (hasOwn(node, "items")) check(node.items, `${p}.items`);
-    for (const keyword of ["minItems", "minLength"]) {
+    for (const keyword of ["minItems", "minLength", "minProperties"]) {
       if (hasOwn(node, keyword) && (!Number.isInteger(node[keyword]) || node[keyword] < 0)) {
         errors.push(`${p}.${keyword}: expected a non-negative integer`);
       }
@@ -395,6 +396,9 @@ function validate(value, schema, p, errors) {
   if (typeOf(value) === "object") {
     for (const req of hasOwn(schema, "required") ? schema.required : []) {
       if (!hasOwn(value, req)) errors.push(`${p}: missing required field ${safeQuote(req)}`);
+    }
+    if (hasOwn(schema, "minProperties") && Object.keys(value).length < schema.minProperties) {
+      errors.push(`${p}: must have at least ${schema.minProperties} propertie(s), got ${Object.keys(value).length}`);
     }
     for (const key of Object.keys(value)) {
       if (hasOwn(schema, "properties") && hasOwn(schema.properties, key)) {

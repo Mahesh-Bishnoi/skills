@@ -1,6 +1,6 @@
 ---
 name: parallel-dispatch
-description: Fan out two or more independent tasks to background subagents, then collect and synthesize results
+description: Fan out two or more independent tasks to background subagents, then collect and synthesize results. Use when parallelizing independent work with self-contained prompts.
 ---
 
 Run independent tasks concurrently via background subagents. OpenCode has one `subagent` tool: foreground (default) blocks until done; `background=true` returns immediately with a `sessionID` you continue later to collect. There is no messaging, waiting-room, or kill primitive — this skill covers fan-out/fan-in only.
@@ -23,7 +23,7 @@ Fan out iff ALL hold; otherwise run sequential foreground calls:
 
 ## Fan-in
 
-1. Continue each worker via its `sessionID` and collect results.
+1. Wait for the `subagent` tool's completion notification for each worker, then continue it via its `sessionID` to collect results. The tool notifies on completion — do not poll.
 2. Synthesize, don't concatenate: dedupe overlapping findings and resolve contradictions explicitly (state which worker won and why).
 3. Verify yourself: re-run the full check suite after integrating — workers make systematic errors, so spot-check their changes rather than trusting summaries.
 4. Report per-worker outcome: what each did, files changed, checks run.

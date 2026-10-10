@@ -5,7 +5,7 @@ Bootstraps two upstream design skills, then gets out of the way. Vendors nothing
 Upstreams:
 
 - `ui-ux-pro-max`: design-system generator (192 rules, styles, palettes, fonts). Installer CLI is `uipro` from npm package `ui-ux-pro-max-cli` (stale `uipro-cli` must not be used). Docs at https://github.com/nextlevelbuilder/ui-ux-pro-max-skill
-- `taste`: anti-slop frontend taste. Default variant is `design-taste-frontend` (v2 experimental). Installed via `npx skills add https://github.com/Leonxlnx/taste-skill`. Docs at https://github.com/Leonxlnx/taste-skill
+- `taste`: anti-slop frontend taste. Default variant is `design-taste-frontend` (v2 experimental). Installed via `npx -y skills add https://github.com/Leonxlnx/taste-skill -a opencode --copy -y`. Docs at https://github.com/Leonxlnx/taste-skill
 
 Project `AGENTS.md` and existing codebase conventions override this file.
 
@@ -21,12 +21,13 @@ ls ~/.config/opencode/skills 2>/dev/null || true
 ls .opencode/skills 2>/dev/null || true
 ls ~/.agents/skills 2>/dev/null || true
 ls .agents/skills 2>/dev/null || true
+ls .claude/skills 2>/dev/null || true
 ```
 
 Installed means:
 
-- `ui-ux-pro-max`: a `ui-ux-pro-max` directory under any of the above skills dirs, or `uipro` CLI present.
-- `taste`: a `design-taste-frontend*` entry (SKILL.md with install name `design-taste-frontend`) under any of the above skills dirs.
+- `ui-ux-pro-max`: a `ui-ux-pro-max` directory under any of the above skills dirs (`.claude/skills` counts as a project compatibility source), or `uipro` CLI present.
+- `taste`: a `design-taste-frontend*` entry (SKILL.md with install name `design-taste-frontend`) under any of the above skills dirs (`.claude/skills` counts as a project compatibility source).
 - Note whether copies are project-local or global. If stale global copies exist and scope is project-local, offer to remove them so they stop advertising in every session.
 
 If both are present at the wanted scope, skip to Step 4.
@@ -35,7 +36,7 @@ If both are present at the wanted scope, skip to Step 4.
 
 Ask only what is missing. Defaults in brackets. Wait for each answer.
 
-1. `Scope: project-local (this repo) or global (all projects) [project-local]?` Project-local writes to `.opencode/skills` in the current repo (commit for team/CI). Global writes to `~/.config/opencode/skills` (via `uipro init --ai opencode --global`) — opt-in only, advertises everywhere.
+1. `Scope: project-local (this repo) or global (all projects) [project-local]?` Project-local writes to `.opencode/skills` in the current repo (commit for team/CI). Global writes to `~/.config/opencode/skills` (via `uipro init --ai opencode --global`) — opt-in only, advertises everywhere. Scope only controls skill file placement (and MCP target file); `npm install -g ui-ux-pro-max-cli` below is always per-user global, and only `uipro init --ai opencode` without `--global` is project-local.
 2. `uipro target [opencode]?` Options: `opencode`, `universal` (`.agents/skills`, also discovered by OpenCode), `all`. Recommend `opencode` for OpenCode-only, `universal` when the user also uses other agents.
 3. `taste variant [design-taste-frontend]?` Default is the v2 rewrite. Mention alternatives only if asked: `design-taste-frontend-v1` (pinned old behavior), `gpt-taste`, `redesign-existing-projects`, `minimalist-ui`, `high-end-visual-design`, `industrial-brutalist-ui`, imagegen variants. Install single skill by default, not the whole repo.
 4. `Confirm install?` The agent must never install software silently. Present the exact commands and get an explicit yes. The human runs them if the agent lacks permission.
@@ -49,15 +50,17 @@ npm install -g ui-ux-pro-max-cli
 uipro init --ai opencode
 ```
 
+`npm install -g ui-ux-pro-max-cli` is per-user global, not project-local; only `uipro init --ai opencode` without `--global` is project-local.
+
 Global opt-in variant (only if Step 2.1 was global): add `--global` to the `uipro init` command. Replace `opencode` with `universal` or `all` per Step 2.2. Refresh later with `uipro update` (add `--global` to match scope). Preview without writing via `uipro init --ai opencode --dry-run`.
 
 taste (default variant), project-local — run from the project root:
 
 ```sh
-npx skills add https://github.com/Leonxlnx/taste-skill --skill "design-taste-frontend"
+npx -y skills add https://github.com/Leonxlnx/taste-skill -a opencode --copy -y --skill "design-taste-frontend"
 ```
 
-Confirm the taste directory landed under `.opencode/skills`. (The taste installer writes project-local when run from the project root; add `-g` only for the global opt-in.)
+Confirm the taste directory landed under `.opencode/skills` or `.agents/skills` (universal, also discovered by OpenCode) — check both. (The taste installer writes project-local when run from the project root; add `-g` only for the global opt-in.)
 
 Omit `--skill` to install all taste variants. Re-run the same command to upgrade v1 to v2. Pin v1 only on request with `--skill "design-taste-frontend-v1"`.
 

@@ -1,6 +1,6 @@
 ---
 name: tech-skills
-description: Router to bundled technology guides (Java, Spring Boot, Python, Pydantic, databases, frameworks, tools, etc.). Load before any stack-specific implementation to detect the project stack from manifests and read only the applicable guides.
+description: Router to bundled technology guides (Java, Spring Boot, Python, Pydantic). Load before any stack-specific implementation to detect the project stack from manifests and read only the applicable guides.
 ---
 
 # Tech Skills Router

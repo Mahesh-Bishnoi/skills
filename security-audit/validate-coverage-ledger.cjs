@@ -488,6 +488,76 @@ function validateExcludedBlocks(value, location, errors) {
   });
 }
 
+let cachedBlockRefs = null;
+
+function loadValidBlockRefs() {
+  if (cachedBlockRefs !== null) return cachedBlockRefs;
+  const refs = new Set();
+  let files = [];
+  try {
+    files = fs.readdirSync(__dirname).filter((name) => name.endsWith(".md"));
+  } catch {
+    cachedBlockRefs = refs;
+    return refs;
+  }
+  for (const file of files) {
+    let text;
+    try {
+      text = fs.readFileSync(path.join(__dirname, file), "utf8");
+    } catch {
+      continue;
+    }
+    const names = new Set();
+    for (const line of text.split("\n")) {
+      const heading = line.match(/^#{1,6}\s+(.+?)\s*$/);
+      if (heading && heading[1].trim()) {
+        names.add(heading[1].trim());
+        const base = heading[1].split("(")[0].trim();
+        if (base) names.add(base);
+      }
+    }
+    for (const match of text.matchAll(/\*\*(.+?)\*\*/g)) {
+      const inner = match[1].replace(/`/g, "").trim();
+      if (inner) {
+        names.add(inner);
+        const base = inner.split("(")[0].trim();
+        if (base) names.add(base);
+      }
+    }
+    for (const name of names) refs.add(`${file}#${name}`);
+  }
+  cachedBlockRefs = refs;
+  return refs;
+}
+
+function validateBlockRef(value, location, errors) {
+  if (typeof value !== "string" || !isVisibleText(value)) return;
+  const hash = value.indexOf("#");
+  if (hash === -1) {
+    errors.push(`${location}: expected a FILE.md#Block reference`);
+    return;
+  }
+  const file = value.slice(0, hash);
+  const block = value.slice(hash + 1);
+  if (!file.endsWith(".md") || block.length === 0) {
+    errors.push(`${location}: expected a FILE.md#Block reference`);
+    return;
+  }
+  try {
+    if (!fs.existsSync(path.join(__dirname, file))) {
+      errors.push(`${location}: unknown block file ${safeQuote(file)}`);
+      return;
+    }
+  } catch {
+    return;
+  }
+  const valid = loadValidBlockRefs();
+  if (valid.size === 0) return;
+  if (!valid.has(value)) {
+    errors.push(`${location}: unknown block ${safeQuote(value)} (no matching heading or class name)`);
+  }
+}
+
 function semanticKey(unit) {
   return JSON.stringify([
     unit.surface,
@@ -689,9 +759,21 @@ function collectUnitErrors(unit, index) {
   validateStringArray(unit.starting_paths, `${base}.starting_paths`, errors, { allowEmpty: false, pathValue: true });
   if (unit.ordinary_attack_class_block !== null && !isVisibleText(unit.ordinary_attack_class_block)) {
     errors.push(`${base}.ordinary_attack_class_block: expected null or non-empty text`);
+  } else if (typeof unit.ordinary_attack_class_block === "string") {
+    validateBlockRef(unit.ordinary_attack_class_block, `${base}.ordinary_attack_class_block`, errors);
   }
   validateStringArray(unit.selected_companion_blocks, `${base}.selected_companion_blocks`, errors);
+  if (Array.isArray(unit.selected_companion_blocks)) {
+    unit.selected_companion_blocks.forEach((block, blockIndex) => {
+      validateBlockRef(block, `${base}.selected_companion_blocks[${blockIndex}]`, errors);
+    });
+  }
   validateExcludedBlocks(unit.excluded_blocks, `${base}.excluded_blocks`, errors);
+  if (Array.isArray(unit.excluded_blocks)) {
+    unit.excluded_blocks.forEach((entry, blockIndex) => {
+      if (isObject(entry)) validateBlockRef(entry.block, `${base}.excluded_blocks[${blockIndex}].block`, errors);
+    });
+  }
   if (Array.isArray(unit.selected_companion_blocks) && Array.isArray(unit.excluded_blocks)) {
     const selected = new Set(unit.selected_companion_blocks);
     unit.excluded_blocks.forEach((entry, blockIndex) => {
@@ -863,9 +945,11 @@ module.exports = {
   hasVisibleProse,
   isSafeAgentId,
   isSafeRelativePath,
+  loadValidBlockRefs,
   preflightJsonText,
   readFileWithinLimit,
   safeQuote,
+  validateBlockRef,
   validateDocument,
 };
 

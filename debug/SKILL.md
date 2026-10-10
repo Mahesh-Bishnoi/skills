@@ -30,7 +30,7 @@ Read the full error and stack trace first. Then choose:
   - The fix is a few lines.
   - You have a command that shows the failure right now.
 
-  Fast lane = do Step 1 (short), run the failing command, fix, re-run, then Step 7 and Step 8. **If the first fix doesn't work, leave the fast lane** and continue from Step 2.
+  Fast lane = do Step 1 (short), run the failing command, fix, re-run, then add the regression test (Step 6b), then Step 7 and Step 8. **If the first fix doesn't work, leave the fast lane** and continue from Step 2.
 - **Full lane** — everything else: no clear error, the error is inside a library, intermittent failures, "works on my machine", wrong output, slowness, or anything you tried once and failed. Do every step.
 
 ## Step 1: Write down the symptom

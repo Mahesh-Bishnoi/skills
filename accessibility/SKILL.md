@@ -56,7 +56,7 @@ Summaries below; copy-paste markup lives in [references/a11y-patterns.md](refere
 - **Keyboard.** Prefer native `<button>`, `<a href>`, form controls — they handle focus, Enter/Space, and semantics for free. Custom controls must be focusable and handle `Enter`/`Space` without double-triggering native behavior. No keyboard traps. [Pattern](references/a11y-patterns.md#keyboard-and-focus)
 - **Focus.** Never remove outlines globally. Use `:focus-visible` for keyboard-only indicators; keep focused elements clear of sticky headers via `scroll-margin`. [Pattern](references/a11y-patterns.md#contrast-and-focus)
 - **Skip link.** One "Skip to main content" link bypassing repetitive navigation. [Pattern](references/a11y-patterns.md#skip-link)
-- **Target size.** Minimum 24×24 CSS px (AA); 44×44 recommended for touch. Inline text links are exempt. (On mobile surfaces `seo` asks 48 px — meet both, use the larger target.)
+- **Target size.** Minimum 24×24 CSS px (AA); 44×44 recommended for touch. Inline text links are exempt.
 - **Motion and timing.** Honor `prefers-reduced-motion`; let users extend time limits; no content that flashes more than 3 times per second.
 
 **Understandable**
@@ -73,7 +73,7 @@ Summaries below; copy-paste markup lives in [references/a11y-patterns.md](refere
 ### 3. Verify
 
 - Re-run the same audit under the same conditions; failing nodes must clear.
-- Keyboard-walk the affected flow: Tab reaches everything in visual order, Enter/Space activates, focus is always visible, Escape or Tab exits dialogs.
+- Keyboard-walk the affected flow: Tab reaches everything in visual order, Enter/Space activates, focus is always visible, Escape closes dialogs and Tab cycles inside modal dialogs (focus trap).
 - Spot-check at 200% zoom and with `prefers-reduced-motion` enabled.
 - Screen-reader pass for high-stakes flows (VoiceOver, NVDA, or TalkBack) — report which one was used; an untested flow stays `needs-validation`.
 
