@@ -1,6 +1,6 @@
 # Skills
 
-Reusable OpenCode skills. Each skill is a top-level `<skill-id>/SKILL.md` directory (flat `*.md` skills and nested skills are not used here).
+Reusable OpenCode skills. Each skill is a `skills/<skill-id>/SKILL.md` directory (flat `*.md` skills and nested skills are not used here). Wiring always points at `skills/`, never the checkout root — the root holds `README.md`, `AGENTS.md`, `global-AGENTS.md`, which OpenCode would otherwise advertise as bogus skills.
 
 ## Index
 
@@ -60,7 +60,7 @@ Per project — run from the project directory:
 ```
 
 Phase 0 wires the project to the library (project-local `skills` entry in
-`.opencode/opencode.jsonc` pointing at this checkout, so library skills
+`.opencode/opencode.jsonc` pointing at this checkout's `skills/` subdirectory, so library skills
 advertise only here — each teammate runs `/setup` once and never commits a
 personal checkout path) and scaffolds or refreshes `AGENTS.md` from [templates/AGENTS.template.md](templates/AGENTS.template.md)
 (stack, entrypoints, commands, skills-in-use; verified content preserved).
@@ -69,6 +69,6 @@ Phase 1 asks which optional tooling you need
 project-local into `.opencode/skills/` so it advertises only in that project.
 `skills-in-use` in the project's `AGENTS.md` records the choice.
 
-Keep this checkout updated with `git pull` — no re-copying needed for project-local `skills` entries pointing at it. Copy a skill into `<project>/.opencode/skills/<id>-pinned/` only when it must ship with that repo (team/CI); use a different ID since explicit `skills` entries outrank `.opencode/skills` on duplicates.
+Keep this checkout updated with `git pull` — no re-copying needed for project-local `skills` entries pointing at its `skills/` subdirectory. If a project still points at the bare checkout root (legacy layout that advertised README/AGENTS as skills), replace it with `<checkout>/skills`. Copy a skill into `<project>/.opencode/skills/<id>-pinned/` only when it must ship with that repo (team/CI); use a different ID since explicit `skills` entries outrank `.opencode/skills` on duplicates.
 
 See [THIRD_PARTY_NOTICES](THIRD_PARTY_NOTICES) for upstream MIT sources adapted or referenced by these skills.

@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+SKILLS_DIR = ROOT / "skills"
 ID_RE = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 RESERVED_TOP = {"scripts", "templates", "setup", "commands", ".git", ".opencode", ".claude", ".agents"}
 ALLOWED_ROOT_MD = {"README.md", "AGENTS.md", "CLAUDE.md", "global-AGENTS.md"}
@@ -69,16 +70,24 @@ def parse_frontmatter(text: str) -> dict[str, str]:
 
 
 def main() -> int:
+    if not SKILLS_DIR.is_dir():
+        err("skills/: missing; library skills live as skills/<skill-id>/SKILL.md")
+        return 1
     # 1. Stray root-level markdown (flat skill form not used here).
+    # Root *.md (README/AGENTS/global-AGENTS) must never be a skills source:
+    # wiring points at skills/, not the checkout root.
     for md in sorted(ROOT.glob("*.md")):
         if md.name not in ALLOWED_ROOT_MD:
-            err(f"{md.name}: flat *.md skills not used here; use <skill-id>/SKILL.md/")
+            err(f"{md.name}: flat *.md skills not used here; use skills/<skill-id>/SKILL.md/")
 
-    # 2. Nested SKILL.md files (keep skills top-level so ID == dirname).
+    # 2. Nested SKILL.md files (keep skills top-level under skills/ so ID == dirname).
+    # Allowed: skills/<id>/SKILL.md only (parent.parent == SKILLS_DIR).
+    # Everything else advertising as a skill is an error, including a root-level
+    # skills/SKILL.md (OpenCode would give it the literal ID "SKILL").
     nested = sorted(
-        p for p in ROOT.rglob("SKILL.md") if p.parent.parent != ROOT and p.parent != ROOT
+        p for p in ROOT.rglob("SKILL.md") if not (p.parent.parent == SKILLS_DIR and p.parent != SKILLS_DIR)
     )
-    # rglob from ROOT includes <id>/SKILL.md (parent == ROOT/<id>, parent.parent == ROOT) — exclude those.
+    # rglob from ROOT includes skills/<id>/SKILL.md — excluded above.
     for p in nested:
         rel = p.relative_to(ROOT)
         if ".git" in rel.parts:
@@ -86,13 +95,13 @@ def main() -> int:
         # Local install artifacts (gitignored wizard outputs) are not repo skills.
         if rel.parts[0] in {".agents", ".opencode", ".claude", "graphify-out"}:
             continue
-        err(f"{rel}: nested SKILL.md not allowed; move to top-level <skill-id>/SKILL.md")
+        err(f"{rel}: nested SKILL.md not allowed; move to skills/<skill-id>/SKILL.md")
 
     # 3. SKILL.md directly under tooling dirs would still be discovered as a
     # skill (SKILL.md matches at any depth) while the skill loop below skips them.
     for reserved in sorted(RESERVED_TOP - {".git", ".opencode", ".claude", ".agents"}):
         if (ROOT / reserved / "SKILL.md").is_file():
-            err(f"{reserved}/SKILL.md: tooling dir must not contain a skill; move to top-level <skill-id>/SKILL.md")
+            err(f"{reserved}/SKILL.md: tooling dir must not contain a skill; move to skills/<skill-id>/SKILL.md")
 
     # 3b. Setup wizard files (not skills, never advertised).
     if not (ROOT / "commands" / "setup.md").is_file():
@@ -107,8 +116,8 @@ def main() -> int:
 
     skill_dirs = sorted(
         d
-        for d in ROOT.iterdir()
-        if d.is_dir() and d.name not in RESERVED_TOP and not d.name.startswith(".")
+        for d in SKILLS_DIR.iterdir()
+        if d.is_dir() and not d.name.startswith(".")
     )
     skill_ids = {d.name for d in skill_dirs if (d / "SKILL.md").is_file()}
 
@@ -130,69 +139,69 @@ def main() -> int:
         sid = d.name
 
         if len(sid) > 64:
-            err(f"{sid}/SKILL.md: id longer than 64 chars")
+            err(f"skills/{sid}/SKILL.md: id longer than 64 chars")
         if not ID_RE.match(sid):
-            err(f"{sid}/SKILL.md: id must match ^[a-z0-9]+(-[a-z0-9]+)*$ (got {sid!r})")
+            err(f"skills/{sid}/SKILL.md: id must match ^[a-z0-9]+(-[a-z0-9]+)*$ (got {sid!r})")
 
         try:
             text = skill_file.read_text(encoding="utf-8")
         except OSError as e:
-            err(f"{sid}/SKILL.md: unreadable: {e}")
+            err(f"skills/{sid}/SKILL.md: unreadable: {e}")
             continue
 
         fm = parse_frontmatter(text)
         if not fm:
-            err(f"{sid}/SKILL.md: missing or unparsable frontmatter (need name + description)")
+            err(f"skills/{sid}/SKILL.md: missing or unparsable frontmatter (need name + description)")
             continue
         if not fm.get("description", "").strip():
-            err(f"{sid}/SKILL.md: missing non-empty `description` (skill won't be advertised)")
+            err(f"skills/{sid}/SKILL.md: missing non-empty `description` (skill won't be advertised)")
         if not fm.get("name", "").strip():
-            err(f"{sid}/SKILL.md: missing `name`")
+            err(f"skills/{sid}/SKILL.md: missing `name`")
         elif fm["name"].strip() != sid:
             # OpenCode runtime treats `name` as display-only, but stricter
             # tooling (VSCode extension, Claude) requires name == directory.
-            err(f"{sid}/SKILL.md: `name` must equal directory id {sid!r} (got {fm['name'].strip()!r})")
+            err(f"skills/{sid}/SKILL.md: `name` must equal directory id {sid!r} (got {fm['name'].strip()!r})")
         for key in fm:
             if key.lower() in NON_NATIVE_KEYS:
                 err(
-                    f"{sid}/SKILL.md: non-native frontmatter key {key!r}; "
+                    f"skills/{sid}/SKILL.md: non-native frontmatter key {key!r}; "
                     "V2 has no such flag — put always/once-per-session rules in global-AGENTS.md"
                 )
         if "disable-model-invocation" in fm and fm["disable-model-invocation"] not in ("true", "false"):
-            err(f"{sid}/SKILL.md: `disable-model-invocation` must be true or false")
+            err(f"skills/{sid}/SKILL.md: `disable-model-invocation` must be true or false")
 
         body = FRONTMATTER_RE.sub("", text, count=1)
         if "opencode/autoinvoke: false" in text or "disable-model-invocation: true" in text:
             if sid not in ALLOWED_HIDDEN_SKILLS:
-                warn(f"{sid}/SKILL.md: skill is hidden from model discovery (autoinvoke disabled)")
+                warn(f"skills/{sid}/SKILL.md: skill is hidden from model discovery (autoinvoke disabled)")
         desc = fm.get("description", "").strip()
         if desc:
             if not USE_TRIGGER_RE.search(desc):
-                warn(f"{sid}/SKILL.md: description lacks use-trigger wording (e.g. 'Use when ...')")
+                warn(f"skills/{sid}/SKILL.md: description lacks use-trigger wording (e.g. 'Use when ...')")
             if len(desc) > MAX_DESCRIPTION_CHARS:
-                warn(f"{sid}/SKILL.md: description is {len(desc)} chars (keep under ~{MAX_DESCRIPTION_CHARS})")
+                warn(f"skills/{sid}/SKILL.md: description is {len(desc)} chars (keep under ~{MAX_DESCRIPTION_CHARS})")
         if "mcpServers" in text:
-            err(f"{sid}/SKILL.md: `mcpServers` is Claude format; V2 uses `mcp.servers`")
+            err(f"skills/{sid}/SKILL.md: `mcpServers` is Claude format; V2 uses `mcp.servers`")
         # Cross-skill references must resolve (warn-only). Strip fenced blocks
         # so code samples (JSDoc tags, npm scopes, payloads) don't false-positive.
         prose = FENCED_BLOCK_RE.sub("", body)
         for ref in sorted(set(AT_REF_RE.findall(prose))):
             if ref not in skill_ids and ref not in ALLOWED_EXTERNAL_SKILLS:
-                warn(f"{sid}/SKILL.md: dangling @{ref} reference (no such skill dir)")
+                warn(f"skills/{sid}/SKILL.md: dangling @{ref} reference (no such skill dir)")
         for ref in sorted(set(THE_SKILL_RE.findall(body))):
             if ref not in skill_ids and ref not in ALLOWED_EXTERNAL_SKILLS:
-                warn(f"{sid}/SKILL.md: dangling 'the {ref} skill' reference (no such skill dir)")
+                warn(f"skills/{sid}/SKILL.md: dangling 'the {ref} skill' reference (no such skill dir)")
         for hid in sorted(hidden_ids):
             if re.search(rf"(?<![\w/])@{re.escape(hid)}\b", body) and not re.search(
                 rf"ask the user to invoke\s+[`@]*{re.escape(hid)}", body, re.IGNORECASE
             ):
-                warn(f"{sid}/SKILL.md: hands off to hidden skill @{hid} without asking the user to invoke it")
+                warn(f"skills/{sid}/SKILL.md: hands off to hidden skill @{hid} without asking the user to invoke it")
         # Portable references (~/.config/) are allowed; machine-specific
         # absolute paths and hardcoded checkout locations are not. Paths must
         # be relative to the skill dir or resolved at runtime ($SKILLS_DIR).
         for pat in ("/home/", "/Users/", "](/)", "](/", "%HOME%", "~/code/skills"):
             if pat in body:
-                err(f"{sid}/SKILL.md: absolute/personal path reference {pat!r}; use paths relative to skill dir")
+                err(f"skills/{sid}/SKILL.md: absolute/personal path reference {pat!r}; use paths relative to skill dir")
                 break
         # Check relative markdown links resolve.
         for m in re.finditer(r"\[[^\]]*\]\(([^)#\s]+)\)", body):
@@ -201,10 +210,10 @@ def main() -> int:
                 continue
             if (d / target).exists():
                 continue
-            err(f"{sid}/SKILL.md: broken relative link {target!r}")
+            err(f"skills/{sid}/SKILL.md: broken relative link {target!r}")
 
     if not found_skill:
-        warn("no skills found yet (no <skill-id>/SKILL.md directories)")
+        warn("no skills found yet (no skills/<skill-id>/SKILL.md directories)")
 
     # Reference and wizard docs are not skills, but they get the same
     # portability checks as skill bodies (warn-only for these dirs).

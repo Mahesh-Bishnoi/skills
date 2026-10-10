@@ -4,6 +4,7 @@
 set -euo pipefail
 
 CHECKOUT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+SKILLS_SOURCE="$CHECKOUT/skills"
 CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/opencode"
 JSONC="$CONFIG_DIR/opencode.jsonc"
 POINTER="$CONFIG_DIR/skills-repo.path"
@@ -18,8 +19,8 @@ for arg in "$@"; do
     -h|--help)
       echo "Usage: install.sh [--global] [--remove-global]"
       echo "  default:        write pointer file, install AGENTS.md + /setup command; no global skills entry"
-      echo "  --global:       also add this checkout to the global skills array (advertises library in every project)"
-      echo "  --remove-global: remove this checkout from the global skills array (per-project /setup wiring only)"
+      echo "  --global:       also add this checkout's skills/ dir to the global skills array (advertises library in every project)"
+      echo "  --remove-global: remove this checkout (root and skills/ dir) from the global skills array (per-project /setup wiring only)"
       exit 0
       ;;
     *) echo "Unknown arg: $arg (see --help)" >&2; exit 1 ;;
@@ -33,10 +34,13 @@ printf '%s\n' "$CHECKOUT" > "$POINTER"
 echo "wrote $POINTER"
 
 # 2. Global `skills` entry: opt-in only (--global) or removal (--remove-global).
-#    Default installs stay per-project: /setup adds the checkout to
-#    <project>/.opencode/opencode.jsonc, so the library advertises only there.
+#    Default installs stay per-project: /setup adds the checkout's skills/
+#    dir to <project>/.opencode/opencode.jsonc, so the library advertises only there.
+#    The skills source is <checkout>/skills (not the checkout root: the root
+#    holds README/AGENTS/global-AGENTS.md, which OpenCode would advertise as
+#    bogus flat-file skills).
 if [ "$MODE" = "global" ]; then
-SKILLS_DIR="$CHECKOUT" JSONC_PATH="$JSONC" python3 - <<'EOF'
+SKILLS_DIR="$SKILLS_SOURCE" JSONC_PATH="$JSONC" python3 - <<'EOF'
 import json, os, sys
 
 path = os.environ["JSONC_PATH"]
@@ -107,12 +111,21 @@ def normalize(entry):
         expanded = os.path.normpath(os.path.join(os.path.expanduser("~"), expanded))
     return os.path.normpath(expanded)
 
-if normalize(checkout) not in [normalize(e) for e in skills]:
+# Migrate the legacy checkout-root entry (pre-skills/ layout advertised
+# README/AGENTS/global-AGENTS as bogus skills): drop it, keep skills/ dir.
+roots = [os.path.normpath(os.path.join(os.path.normpath(checkout), "..")), os.path.normpath(checkout)]
+normed = [normalize(e) for e in skills]
+skills = [e for e in skills if normalize(e) not in roots or normalize(e) == os.path.normpath(checkout)]
+changed_migration = len(skills) != len(normed)
+normed = [normalize(e) for e in skills]
+
+if normalize(checkout) not in normed:
     skills.append(checkout)
     data["skills"] = skills
     changed = True
 else:
     changed = False
+changed = changed or changed_migration
 
 with open(path, "w", encoding="utf-8") as f:
     json.dump(data, f, indent=2)
@@ -120,11 +133,12 @@ with open(path, "w", encoding="utf-8") as f:
 print(("updated " if changed else "ok ") + path)
 EOF
 elif [ "$MODE" = "remove-global" ]; then
-SKILLS_DIR="$CHECKOUT" JSONC_PATH="$JSONC" python3 - <<'EOF'
+SKILLS_DIR="$SKILLS_SOURCE" CHECKOUT_ROOT="$CHECKOUT" JSONC_PATH="$JSONC" python3 - <<'EOF'
 import json, os, sys
 
 path = os.environ["JSONC_PATH"]
 checkout = os.environ["SKILLS_DIR"]
+legacy_root = os.environ.get("CHECKOUT_ROOT", "")
 
 def normalize(entry):
     if not isinstance(entry, str):
@@ -191,7 +205,9 @@ if not isinstance(skills, list):
     sys.exit(1)
 
 target = normalize(checkout)
-kept = [e for e in skills if normalize(e) != target]
+legacy = normalize(legacy_root) if legacy_root else None
+targets = {target} | ({legacy} if legacy else set())
+kept = [e for e in skills if normalize(e) not in targets]
 if len(kept) == len(skills):
     print("ok " + path + " (entry not present)")
 else:
@@ -199,7 +215,7 @@ else:
     with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2)
         f.write("\n")
-    print("updated " + path + " (removed global checkout entry)")
+    print("updated " + path + " (removed global skills entry)")
 EOF
 else
   echo "skipped global skills entry (per-project /setup wiring only; use --global to opt in, --remove-global to migrate)"
@@ -224,6 +240,7 @@ fi
 # 5. Verify.
 echo "checkout: $CHECKOUT"
 echo "pointer: $POINTER"
-echo "skills: $(ls -d "$CHECKOUT"/*/SKILL.md 2>/dev/null | wc -l) skills"
+echo "skills source: $SKILLS_SOURCE"
+echo "skills: $(ls -d "$SKILLS_SOURCE"/*/SKILL.md 2>/dev/null | wc -l) skills"
 command -v python3 >/dev/null && python3 "$CHECKOUT/scripts/lint-skills.py" | tail -1
 echo "Done. /setup stays global; library skills advertise only in projects where /setup ran. Per project, cd there and run /setup."

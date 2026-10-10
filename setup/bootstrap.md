@@ -17,13 +17,18 @@ Project `AGENTS.md` and existing codebase conventions override this file.
   it (explicit yes before writing). A legacy global `skills` entry pointing at
   the checkout still resolves, but report it as legacy.
 - Read the project's `.opencode/opencode.jsonc`; check its `skills` array
-  includes the checkout path. If missing, report it as the likely reason
-  library skills do not advertise in this project. Without this project-local
-  entry the library skills never advertise here (by design — other projects
-  stay clean). If a legacy global `skills` entry points at the checkout, report
-  that the library currently advertises in every project and offer to remove
-  the global entry (e.g. via `scripts/install.sh --remove-global`, explicit yes
-  before writing).
+  includes the checkout's `skills/` subdirectory (`<checkout>/skills` — the
+  skills source, not the checkout root: the root holds README/AGENTS docs
+  that OpenCode would advertise as bogus flat-file skills). If missing,
+  report it as the likely reason library skills do not advertise in this
+  project. Without this project-local entry the library skills never
+  advertise here (by design — other projects stay clean). A project-local or
+  global entry pointing at the bare checkout root is the pre-`skills/`
+  layout: report it as legacy and offer to replace it with `<checkout>/skills`.
+  If a legacy global `skills` entry points at the checkout (root or `skills/`),
+  report that the library currently advertises in every project and offer to
+  remove the global entry (e.g. via `scripts/install.sh --remove-global`,
+  explicit yes before writing).
 - Check whether the project has `AGENTS.md` and whether every template
   placeholder is filled. If verified content already exists, preserve it —
   only fill gaps or reconcile drift.
@@ -34,19 +39,21 @@ Project `AGENTS.md` and existing codebase conventions override this file.
 ## Step 2 — Ask (only what is missing)
 
 - If the pointer file is missing or stale: `Rewrite the pointer file with this checkout path [yes]?`
-- If this project is not wired: `Add the checkout to this project's .opencode/opencode.jsonc skills and re-verify [yes]?`
-- If a legacy global entry exists: `Remove the checkout from the global skills array so it stops advertising everywhere [yes]?`
+- If this project is not wired: `Add the checkout's skills/ dir to this project's .opencode/opencode.jsonc skills and re-verify [yes]?`
+- If a legacy checkout-root entry exists (project-local or global): `Replace the bare checkout path with its skills/ subdirectory [yes]?`
+- If a legacy global entry exists: `Remove the library from the global skills array so it stops advertising everywhere [yes]?`
 - Only on explicit yes do any writes happen.
 
 ## Step 3 — Write (on explicit yes where required)
 
 1. Fix the pointer file first if approved (single absolute checkout path).
 2. Wire the project: create `<project>/.opencode/opencode.jsonc` if missing,
-   preserve other keys, and add the checkout's absolute path to its `skills`
-   array (no duplicates). This entry is machine-local: never commit a personal
-   checkout path — each teammate runs `/setup` once to wire their own checkout.
-   Team-shared skills still ship as pinned copies under `.opencode/skills/`,
-   not via this entry.
+   preserve other keys, and add the checkout's `skills/` subdirectory absolute
+   path (`<checkout>/skills`) to its `skills` array (no duplicates; drop any
+   legacy bare-`<checkout>` entry it replaces). This entry is machine-local:
+   never commit a personal checkout path — each teammate runs `/setup` once
+   to wire their own checkout. Team-shared skills still ship as pinned copies
+   under `.opencode/skills/`, not via this entry.
 3. Inspect the target project just enough to fill every placeholder: root
    manifests, entrypoints, test/lint/typecheck commands, major directories.
    Prefer executable sources (configs, scripts, CI) over prose.
