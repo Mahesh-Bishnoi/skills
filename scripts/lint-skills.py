@@ -28,6 +28,7 @@ ALLOWED_HIDDEN_SKILLS = {"grill", "project-bootstrap"}
 ALLOWED_EXTERNAL_SKILLS = {
     "archify", "drawio-skill", "ui-ux-pro-max", "design-taste-frontend",
     "design-taste-frontend-v1", "graphify", "agent-browser", "browser-harness",
+    "openwiki",
 }
 # Use-trigger wording required in descriptions (warn-only).
 USE_TRIGGER_RE = re.compile(

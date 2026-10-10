@@ -25,3 +25,6 @@ Identifiers below are written exactly as cited in the attributing files
 4. soujava/agent-skills (MIT, Copyright (c) 2026 Maximillian Arruda)
    - `spring-boot-server` — informed tech-skills/skills/spring-boot.md (line 49).
    - `java-conventions` + `java-distiller` — informed tech-skills/skills/java.md (line 50).
+
+5. langchain-ai/openwiki (MIT)
+   - `integrations/openwiki/SKILL.md` + CLI docs — referenced in setup/openwiki.md (no files vendored).

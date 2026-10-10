@@ -25,7 +25,7 @@ One line per skill (first sentence of its description):
 
 ## Entry points
 
-- [setup/](setup/) — `/setup` wizard source topics (routed by [setup/_index.md](setup/_index.md)).
+- [setup/](setup/) — `/setup` wizard source topics (routed by [setup/_index.md](setup/_index.md)): archify, drawio, ui-ux, graphify, agent-browser, browser-harness, openwiki.
 - [commands/setup.md](commands/setup.md) — the single `/setup` wizard command.
 - [templates/](templates/) — per-project `AGENTS.md` template.
 - [scripts/lint-skills.py](scripts/lint-skills.py) — repo linter (stdlib only; `python3 scripts/lint-skills.py`).
