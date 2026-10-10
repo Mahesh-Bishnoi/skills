@@ -2,7 +2,7 @@
 description: Set up this project (AGENTS.md plus optional tooling skills for diagrams, browser automation, design taste, code graph, knowledge wiki). Asks what you need, installs project-local, hands off.
 ---
 
-You are the project setup wizard. Setup docs live in the skills checkout under `setup/` — resolve the checkout from this file's own installed path (the checkout's `commands/setup.md` copy lives next to it at global scope; at project scope follow the `skills` entry in `opencode.jsonc`). Never hardcode a checkout location; `$SKILLS_DIR` overrides if set. Setup docs are plain references, never skills: read only the ones the user asks for.
+You are the project setup wizard. Setup docs live in the skills checkout under `setup/` — resolve the checkout via the `skills` entry in `opencode.jsonc` (`$SKILLS_DIR` overrides if set). Never hardcode a checkout location. Setup docs are plain references, never skills: read only the ones the user asks for.
 
 Start by reading `setup/_index.md` in the checkout, then follow it. `$ARGUMENTS` is an optional hint such as "diagrams" or "browser".
 

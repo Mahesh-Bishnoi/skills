@@ -13,7 +13,7 @@ mkdir -p "$CONFIG_DIR" "$CONFIG_DIR/commands"
 
 # 1. Global `skills` entry pointing at this checkout (preserves other keys).
 SKILLS_DIR="$CHECKOUT" JSONC_PATH="$JSONC" python3 - <<'EOF'
-import json, os, re, sys
+import json, os, sys
 
 path = os.environ["JSONC_PATH"]
 checkout = os.environ["SKILLS_DIR"]
@@ -27,11 +27,42 @@ if os.path.exists(path):
 data = {}
 if raw.strip():
     # Strip // and /* */ comments so stdlib json can parse JSONC.
-    stripped = re.sub(r"/\*.*?\*/", "", raw, flags=re.DOTALL)
-    stripped = re.sub(r"(?m)^\s*//.*$", "", stripped)
-    stripped = re.sub(r"(?m)([,{\[]\s*)//.*$", r"\1", stripped)
+    # String-aware: comment markers inside "..." are data, not comments.
+    def strip_jsonc(text):
+        out = []
+        i, n = 0, len(text)
+        in_str = False
+        esc = False
+        while i < n:
+            c = text[i]
+            nxt = text[i + 1] if i + 1 < n else ""
+            if in_str:
+                out.append(c)
+                if esc:
+                    esc = False
+                elif c == "\\":
+                    esc = True
+                elif c == '"':
+                    in_str = False
+                i += 1
+            elif c == '"':
+                in_str = True
+                out.append(c)
+                i += 1
+            elif c == "/" and nxt == "/":
+                while i < n and text[i] != "\n":
+                    i += 1
+            elif c == "/" and nxt == "*":
+                i += 2
+                while i + 1 < n and not (text[i] == "*" and text[i + 1] == "/"):
+                    i += 1
+                i += 2
+            else:
+                out.append(c)
+                i += 1
+        return "".join(out)
     try:
-        data = json.loads(stripped)
+        data = json.loads(strip_jsonc(raw))
     except json.JSONDecodeError as e:
         print(f"ERROR: {path} is not parseable JSON/JSONC: {e}", file=sys.stderr)
         print("Fix or move it aside, then re-run this script.", file=sys.stderr)
@@ -41,7 +72,18 @@ skills = data.get("skills", [])
 if not isinstance(skills, list):
     print(f"ERROR: {path} has a non-list `skills` key; fix it manually.", file=sys.stderr)
     sys.exit(1)
-if checkout not in skills:
+
+def normalize(entry):
+    # Match existing entries that point here in another spelling:
+    # ~/..., $HOME/..., or relative paths resolve against $HOME.
+    if not isinstance(entry, str):
+        return entry
+    expanded = os.path.expanduser(os.path.expandvars(entry))
+    if not os.path.isabs(expanded):
+        expanded = os.path.normpath(os.path.join(os.path.expanduser("~"), expanded))
+    return os.path.normpath(expanded)
+
+if normalize(checkout) not in [normalize(e) for e in skills]:
     skills.append(checkout)
     data["skills"] = skills
     changed = True
