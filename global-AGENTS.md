@@ -1,0 +1,34 @@
+# Global instructions
+
+Source of truth: `global-AGENTS.md` in the skills repo. Installing means merging (repo wins on conflict, local-only content preserved) with user confirmation — never blind overwrite. See setup step 3 in the repo `AGENTS.md`. Project-specific guidance lives in each repo's own `AGENTS.md`; when the two conflict, the project file wins for that repo.
+
+## Skills
+
+- Skills live in the `~/code/skills` checkout, exposed via the global `skills` config entry. Each skill's frontmatter `description` is the source of truth for *when* to invoke it.
+- Before starting a task, scan the advertised skill list. When a description matches the task, load it with the `skill` tool (or honor the user's `@<skill-id>` mention) and follow it.
+- Do not guess a skill's content from its name — load the body first.
+- User-only skills (`opencode/autoinvoke: false`) are never loaded uninvited; load them only on explicit user request.
+- Optional tooling (diagrams, browser automation, design taste, code graph) is set up via the `/setup` slash command, not via skills. Setup docs live in `~/code/skills/setup/` as plain references and are never advertised. Installed tooling defaults to project-local (`.opencode/skills`, OpenCode-only) so it advertises only in the project that uses it; global installs are opt-in only. `.agents/skills` is the universal target (also discovered by OpenCode) for users working across agents; `/setup` asks which target to use.
+- `security-audit` full-audit mode is the only workflow with sandbox + coverage-ledger + critic ceremony; no other skill requires it.
+- A skill body may say "once per session" — honor it: don't reload after the first load unless compaction or a revert wiped it.
+- Prefer the global skill over copying it into a project. Copy into `<project>/.opencode/skills/` only when the skill must ship with that repo (team/CI); note that project-local copies override global ones on duplicate IDs. This is the default for anything `/setup` installs.
+
+## Code
+
+- Load the `clean-code` skill before any non-trivial code change (new feature, refactor, bug fix spanning more than a few lines, or code review).
+- Load the `hardening` skill when the change touches auth, sessions, user input, secrets, file uploads, server-side fetches, dependencies, personal data, or LLM output.
+- Read the project's `AGENTS.md` for stack, entrypoints, and conventions before writing code. If it names a formatter/linter, run it after edits.
+- Edit existing files over creating new ones. Match surrounding style. No speculative abstractions.
+- Never commit secrets. Use `{env:VAR}`-style references in config, never literal keys.
+
+## Testing
+
+- Run the project's documented verification step (see its `AGENTS.md`) after behavior changes. No documented step means: run the narrowest test/build that covers the change, and say what you ran.
+- Verify your own work by execution wherever reasonable — reproduce first for bugs, confirm output after.
+- Load debug for any bug, error, or failing test.
+
+## Tools
+
+- Prefer dedicated file tools over shell redirection for reads/edits. Reserve shell for actual commands.
+- Don't run network-wide or destructive commands (`rm -rf`, mass rewrites) without explicit approval.
+- Report what you did concisely: files changed, checks run, outcome.
