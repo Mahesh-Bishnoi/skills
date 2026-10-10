@@ -42,11 +42,16 @@ cd skills && ./scripts/install.sh
 (If `./scripts/install.sh` refuses to run, use `bash scripts/install.sh` —
 same effect. `git` preserves the script's executable bit on checkout.)
 
-The script wires the whole library globally (global `skills` entry pointing at
-this checkout, global `AGENTS.md` on fresh machines, `/setup` command) and is
+The script writes the pointer file (`~/.config/opencode/skills-repo.path`
+locating this checkout for `/setup`), installs global `AGENTS.md` on fresh
+machines and the `/setup` command — and adds no global `skills` entry, so
+library skills stay invisible until a project is wired. Flags: `--global` opts
+into the legacy global `skills` entry (advertises everywhere);
+`--remove-global` removes it to migrate to per-project wiring. The script is
 safe to re-run after `git pull`. On machines where global `AGENTS.md` already
 exists it is never overwritten — the agent merges `global-AGENTS.md` with
-explicit confirmation instead. Restart the agent and confirm with the skill list.
+explicit confirmation instead. `/setup` stays visible in every project; restart
+the agent and confirm with the command list.
 
 Per project — run from the project directory:
 
@@ -54,13 +59,16 @@ Per project — run from the project directory:
 /setup
 ```
 
-Phase 0 scaffolds or refreshes `AGENTS.md` from [templates/AGENTS.template.md](templates/AGENTS.template.md)
-(stack, entrypoints, commands, skills-in-use; verified content preserved) and
-verifies the global wiring. Phase 1 asks which optional tooling you need
+Phase 0 wires the project to the library (project-local `skills` entry in
+`.opencode/opencode.jsonc` pointing at this checkout, so library skills
+advertise only here — each teammate runs `/setup` once and never commits a
+personal checkout path) and scaffolds or refreshes `AGENTS.md` from [templates/AGENTS.template.md](templates/AGENTS.template.md)
+(stack, entrypoints, commands, skills-in-use; verified content preserved).
+Phase 1 asks which optional tooling you need
 (diagrams, browser automation, design taste, code graph, wiki) and installs it
 project-local into `.opencode/skills/` so it advertises only in that project.
 `skills-in-use` in the project's `AGENTS.md` records the choice.
 
-Keep this checkout updated with `git pull` — no re-copying needed for globally-referenced skills. Copy a skill into `<project>/.opencode/skills/<id>-pinned/` only when it must ship with that repo (team/CI); use a different ID since explicit `skills` entries outrank `.opencode/skills` on duplicates.
+Keep this checkout updated with `git pull` — no re-copying needed for project-local `skills` entries pointing at it. Copy a skill into `<project>/.opencode/skills/<id>-pinned/` only when it must ship with that repo (team/CI); use a different ID since explicit `skills` entries outrank `.opencode/skills` on duplicates.
 
 See [THIRD_PARTY_NOTICES](THIRD_PARTY_NOTICES) for upstream MIT sources adapted or referenced by these skills.

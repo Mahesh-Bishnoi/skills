@@ -9,11 +9,11 @@ Central source of truth for reusable skills. Edits happen here; projects only co
 <skill-id>/scripts/...
 <skill-id>/references/...
 setup/                     # setup references for /setup (plain .md, never SKILL.md, never discovered as skills)
-setup/bootstrap.md         # project AGENTS.md scaffold (plain reference, run as /setup Phase 0)
+setup/bootstrap.md         # project AGENTS.md scaffold + per-project library wiring (plain reference, run as /setup Phase 0)
 commands/setup.md          # single setup wizard command (installed by scripts/install.sh)
 global-AGENTS.md              # universal guidance; installed as ~/.config/opencode/AGENTS.md
 templates/AGENTS.template.md  # thin per-project template (used by /setup Phase 0)
-scripts/install.sh            # one-shot new-machine setup (idempotent)
+scripts/install.sh            # one-shot new-machine setup (idempotent; `--global` / `--remove-global` for the legacy global entry)
 scripts/lint-skills.py        # repo tooling, not a skill
 ```
 
@@ -28,23 +28,21 @@ scripts/lint-skills.py        # repo tooling, not a skill
 
 Fresh machines run `scripts/install.sh` from the checkout (clone location does not matter). The script is idempotent — re-run it after `git pull`:
 
-1. Ensure the global `~/.config/opencode/opencode.jsonc` `skills` array contains the checkout's absolute path (create the file if missing, preserve other keys). Never commit a personal checkout path into any project's `opencode.jsonc`.
+1. Write the pointer file `~/.config/opencode/skills-repo.path` with this checkout's absolute path (locates the checkout for `/setup`; advertises nothing). Default installs add no global `skills` entry, so library skills stay invisible until a project is wired. Opt-in only: `--global` adds the checkout to the global `skills` array (advertises everywhere); `--remove-global` removes it (migrate to per-project wiring). Never commit a personal checkout path into any project's `opencode.jsonc`.
 2. Install universal guidance as `~/.config/opencode/AGENTS.md` by merging, never by blind overwrite (the script copies only when the target is missing; otherwise the agent merges):
    - If it doesn't exist → copy `global-AGENTS.md` verbatim.
    - If it exists → read both files, then add what's missing from the repo, update from the repo where they conflict (repo wins), and preserve local-only content untouched.
    - Present the final merged result to the user and write it only after explicit confirmation. Surface local-only rules as upstream candidates; never move them into the repo unasked.
-3. Install the setup wizard as `~/.config/opencode/commands/setup.md` by copying `commands/setup.md` verbatim (create the directory if missing). It resolves `setup/` relative to the checkout at runtime.
-4. Verify with `opencode` skill list / `@<skill-id>` load, and confirm `/setup` appears in the command list.
-
-Do not symlink individual skills — one array entry covers the whole repo.
+3. Install the setup wizard as `~/.config/opencode/commands/setup.md` by copying `commands/setup.md` verbatim (create the directory if missing). It resolves the checkout via `$SKILLS_DIR`, then the pointer file, then a legacy global `skills` entry.
+4. Verify: `/setup` appears in the command list everywhere; library skills advertise only in projects where `/setup` wired them (check from a wired project).
 
 ## Add / update / remove
 
 - Add: create `<skill-id>/SKILL.md` with `name` + `description`, supporting files beside it. Pick advertised (default) or user-only (`metadata.opencode/autoinvoke: false`). Run lint before committing. Setup docs are not skills — add to `setup/<topic>.md` + route via `setup/_index.md`, exposed through `commands/setup.md`.
-- Update: edit here, push; consumers `git pull` + re-run `scripts/install.sh` if wiring changed. No re-copying needed for globally-referenced installs.
+- Update: edit here, push; consumers `git pull` + re-run `scripts/install.sh` if wiring changed. No re-copying needed for project-local `skills` entries pointing at the checkout.
 - Remove: delete the directory. Before deleting, grep consuming projects for per-project copies under `.opencode/skills/<id>`.
-- Per-project copy (`<project>/.opencode/skills/<id>/`) is opt-in only, when a skill must ship with that repo for team/CI. Default is global reference. Avoid duplicate IDs: explicit `skills` config entries outrank `.opencode/skills` on the same ID in V2, so a pinned copy with the same ID is hidden — use a different ID (e.g. `<id>-pinned`) when pinning.
-- Consumer projects: run `/setup` from the project directory. Phase 0 scaffolds `AGENTS.md` from `templates/AGENTS.template.md`. Universal text stays in the global file; never inline it into project files.
+- Per-project copy (`<project>/.opencode/skills/<id>/`) is opt-in only, when a skill must ship with that repo for team/CI — it is the team-sharing mechanism. Default is the project-local `skills` entry pointing at the checkout (machine-local, each teammate runs `/setup` once, never committed). Avoid duplicate IDs: explicit `skills` config entries outrank `.opencode/skills` on the same ID in V2, so a pinned copy with the same ID is hidden — use a different ID (e.g. `<id>-pinned`) when pinning.
+- Consumer projects: run `/setup` from the project directory. Phase 0 wires the project to the library (project-local `skills` entry) and scaffolds `AGENTS.md` from `templates/AGENTS.template.md`. Universal text stays in the global file; never inline it into project files.
 
 ## Verify
 

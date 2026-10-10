@@ -2,7 +2,7 @@
 
 Read this file first when `/setup` runs. It routes to one file per stack in this directory. These files are plain references — they are never discovered as skills, never advertised, and cost zero context until `/setup` reads them.
 
-Resolve the checkout from the running wizard file's own path (never a hardcoded location); `$SKILLS_DIR` overrides if set. All paths below are relative to this directory unless stated otherwise.
+Resolve the checkout in this order: `$SKILLS_DIR` env override, then the pointer file at `~/.config/opencode/skills-repo.path` (written by `scripts/install.sh`), then a legacy global `skills` entry. Never use a hardcoded location. All paths below are relative to this directory unless stated otherwise.
 
 ## Files
 
@@ -25,8 +25,8 @@ Resolve the checkout from the running wizard file's own path (never a hardcoded 
 
 ## Rules for `/setup`
 
-- Phase 0 is always bootstrap (`bootstrap.md`): global wiring + project `AGENTS.md`. If `AGENTS.md` is already complete, verify and move on.
-- Default scope is project-local (`.opencode/skills` in the current repo, committed for team/CI). Global (`-g` / `~/.config/opencode/skills`) only on explicit opt-in — global installs advertise the installed skill in every session.
+- Phase 0 is always bootstrap (`bootstrap.md`): wire this project to the library project-locally + project `AGENTS.md`. If `AGENTS.md` is already complete, verify it and move on.
+- Default scope is project-local. The library itself is wired per project (`<project>/.opencode/opencode.jsonc` `skills` entry pointing at the checkout, so it advertises only where `/setup` ran — each teammate runs `/setup` once for their own checkout path and never commits the personal path). Optional tooling goes into `.opencode/skills` in the current repo (committed for team/CI). Global (`-g` / `~/.config/opencode/skills`, or a global `skills` array entry) only on explicit opt-in — global installs advertise in every session.
 - CLI installs via `npm install -g` / `uv tool install` are per-user global by nature; Scope only controls skill file placement and `uipro init` / `graphify install --project` / `openwiki integrations install --project` / MCP target file (project `opencode.jsonc` vs global with `--global`).
 - Default-off everywhere: MCP entries, Cloud auth, recordings. Ask once, never enable silently.
 - Never run an install without an explicit yes. Present exact commands first; the human runs them if the agent lacks permission.

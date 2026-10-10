@@ -29,7 +29,7 @@
 
 ## Skills in use
 
-- Consumed automatically via the global `skills` entry pointing at the skills checkout. No per-project setup needed.
+- Wired project-locally via `/setup`: this project's `.opencode/opencode.jsonc` `skills` entry points at the skills checkout, so library skills advertise only here. Each teammate runs `/setup` once for their own checkout path; never commit a personal checkout path.
 - Optional tooling via `/setup` (diagrams, browser automation, design taste, code graph): installed project-local into `.opencode/skills/` so it advertises only here. Record chosen tools + scope below.
 - Pinned copies (only if some skill must ship with this repo): `<none | .opencode/skills/<id>-pinned/ + why — use a different ID, explicit skills entries outrank .opencode/skills on duplicates>`
 - Always-load rules for this project: `<none | e.g. always load <id> when touching <area>>`

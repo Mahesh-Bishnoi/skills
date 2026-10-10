@@ -4,13 +4,13 @@ Source of truth: `global-AGENTS.md` in the skills repo (installed by `scripts/in
 
 ## Skills
 
-- Skills live in the skills-repo checkout, exposed via the global `skills` config entry pointing at it. Each skill's frontmatter `description` is the source of truth for *when* to invoke it.
+- Skills live in the skills-repo checkout, wired per project by `/setup` via that project's `.opencode/opencode.jsonc` `skills` entry — library skills advertise only in projects where `/setup` ran. Each skill's frontmatter `description` is the source of truth for *when* to invoke it. `/setup` itself is a global command and stays visible everywhere; the pointer file at `~/.config/opencode/skills-repo.path` only locates the checkout and advertises nothing.
 - Before starting a task, scan the advertised skill list. When a description matches the task, load it with the `skill` tool (or honor the user's `@<skill-id>` mention) and follow it.
 - Do not guess a skill's content from its name — load the body first.
 - User-only skills (`opencode/autoinvoke: false`) are never loaded uninvited; load them only on explicit user request.
 - Project setup runs via the `/setup` slash command, not via skills. Phase 0 scaffolds/refreshes the project's `AGENTS.md`; Phase 1 installs optional tooling (diagrams, browser automation, design taste, code graph). Setup docs live in `setup/` inside the checkout as plain references and are never advertised. Installed tooling defaults to project-local (`.opencode/skills`, OpenCode-only) so it advertises only in the project that uses it; global installs are opt-in only. `.agents/skills` is the universal target (also discovered by OpenCode) for users working across agents; `/setup` asks which target to use.
 - `security-audit` full-audit mode is the only workflow with sandbox + coverage-ledger + critic ceremony; no other skill requires it.
-- Prefer the global skill over copying it into a project. Copy into `<project>/.opencode/skills/` only when the skill must ship with that repo (team/CI); use a different ID for the copy (e.g. `<id>-pinned`) because explicit `skills` config entries outrank `.opencode/skills` on duplicate IDs in V2. This is the default for anything `/setup` installs.
+- Prefer the project-wired library skill over copying it into a project. Copy into `<project>/.opencode/skills/` only when the skill must ship with that repo (team/CI); use a different ID for the copy (e.g. `<id>-pinned`) because explicit `skills` config entries outrank `.opencode/skills` on duplicate IDs in V2. Pinned copies are the team-sharing mechanism; the project-local `skills` entry pointing at a personal checkout is machine-local and never committed — each teammate runs `/setup` once. This is the default for anything `/setup` installs.
 
 ## Code
 
