@@ -1,14 +1,14 @@
 # Global instructions
 
-Source of truth: `global-AGENTS.md` in the skills repo. Installing means merging (repo wins on conflict, local-only content preserved) with user confirmation — never blind overwrite. See setup step 3 in the repo `AGENTS.md`. Project-specific guidance lives in each repo's own `AGENTS.md`; when the two conflict, the project file wins for that repo.
+Source of truth: `global-AGENTS.md` in the skills repo (installed by `scripts/install.sh`). Installing means merging (repo wins on conflict, local-only content preserved) with user confirmation — never blind overwrite. See setup step 2 in the repo `AGENTS.md`. Project-specific guidance lives in each repo's own `AGENTS.md`; when the two conflict, the project file wins for that repo.
 
 ## Skills
 
-- Skills live in the `~/code/skills` checkout, exposed via the global `skills` config entry. Each skill's frontmatter `description` is the source of truth for *when* to invoke it.
+- Skills live in the skills-repo checkout, exposed via the global `skills` config entry pointing at it. Each skill's frontmatter `description` is the source of truth for *when* to invoke it.
 - Before starting a task, scan the advertised skill list. When a description matches the task, load it with the `skill` tool (or honor the user's `@<skill-id>` mention) and follow it.
 - Do not guess a skill's content from its name — load the body first.
 - User-only skills (`opencode/autoinvoke: false`) are never loaded uninvited; load them only on explicit user request.
-- Optional tooling (diagrams, browser automation, design taste, code graph) is set up via the `/setup` slash command, not via skills. Setup docs live in `~/code/skills/setup/` as plain references and are never advertised. Installed tooling defaults to project-local (`.opencode/skills`, OpenCode-only) so it advertises only in the project that uses it; global installs are opt-in only. `.agents/skills` is the universal target (also discovered by OpenCode) for users working across agents; `/setup` asks which target to use.
+- Project setup runs via the `/setup` slash command, not via skills. Phase 0 scaffolds/refreshes the project's `AGENTS.md`; Phase 1 installs optional tooling (diagrams, browser automation, design taste, code graph). Setup docs live in `setup/` inside the checkout as plain references and are never advertised. Installed tooling defaults to project-local (`.opencode/skills`, OpenCode-only) so it advertises only in the project that uses it; global installs are opt-in only. `.agents/skills` is the universal target (also discovered by OpenCode) for users working across agents; `/setup` asks which target to use.
 - `security-audit` full-audit mode is the only workflow with sandbox + coverage-ledger + critic ceremony; no other skill requires it.
 - Prefer the global skill over copying it into a project. Copy into `<project>/.opencode/skills/` only when the skill must ship with that repo (team/CI); use a different ID for the copy (e.g. `<id>-pinned`) because explicit `skills` config entries outrank `.opencode/skills` on duplicate IDs in V2. This is the default for anything `/setup` installs.
 

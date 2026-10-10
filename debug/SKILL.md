@@ -93,11 +93,11 @@ Once you have *a* loop, improve it:
 You don't need a 100% repro. You need a **high failure rate**. Use [scripts/repeat.sh](scripts/repeat.sh) (path is relative to this skill's directory) to run the command many times and count failures:
 
 ```sh
-bash <skills-checkout>/debug/scripts/repeat.sh 50 -- npm test -- -t "saves order"
-bash <skills-checkout>/debug/scripts/repeat.sh 200 -j 8 -- pytest tests/test_x.py -x -q   # 8 in parallel
+bash ./scripts/repeat.sh 50 -- npm test -- -t "saves order"
+bash ./scripts/repeat.sh 200 -j 8 -- pytest tests/test_x.py -x -q   # 8 in parallel
 ```
 
-`<skills-checkout>` is `~/code/skills` by default — ask the user if it isn't there. The script also lives at [scripts/repeat.sh](scripts/repeat.sh) relative to this skill's directory.
+Run it from this skill's directory (or via the skills checkout resolved at runtime — `$SKILLS_DIR`, never a hardcoded clone location). The script also lives at [scripts/repeat.sh](scripts/repeat.sh) relative to this skill's directory.
 
 Raise the failure rate: run in parallel, add CPU load, shrink timeouts, add a `sleep` *inside the code* at the suspected race point (only as a probe, never as the fix). A bug that fails 30% of the time is debuggable; 1% is not — keep pushing the rate up.
 

@@ -2,10 +2,11 @@
 
 Read this file first when `/setup` runs. It routes to one file per stack in this directory. These files are plain references — they are never discovered as skills, never advertised, and cost zero context until `/setup` reads them.
 
-Checkout location is `~/code/skills` by default — ask the user if it isn't there. All paths below are relative to this directory unless stated otherwise.
+Resolve the checkout from the running wizard file's own path (never a hardcoded location); `$SKILLS_DIR` overrides if set. All paths below are relative to this directory unless stated otherwise.
 
 ## Files
 
+- `bootstrap.md` — scaffold or refresh the project's `AGENTS.md` (`/setup` Phase 0, always runs first).
 - `archify.md` — validated architecture/workflow/sequence/dataflow/lifecycle diagrams as standalone HTML (`@archify` after install).
 - `drawio.md` — editable `.drawio` diagrams from language/code/IaC/SQL/API sources (`@drawio-skill` after install).
 - `ui-ux.md` — design-system generator + frontend taste (`@ui-ux-pro-max`, `@design-taste-frontend` after install).
@@ -24,9 +25,10 @@ Checkout location is `~/code/skills` by default — ask the user if it isn't the
 
 ## Rules for `/setup`
 
+- Phase 0 is always bootstrap (`bootstrap.md`): global wiring + project `AGENTS.md`. If `AGENTS.md` is already complete, verify and move on.
 - Default scope is project-local (`.opencode/skills` in the current repo, committed for team/CI). Global (`-g` / `~/.config/opencode/skills`) only on explicit opt-in — global installs advertise the installed skill in every session.
 - CLI installs via `npm install -g` / `uv tool install` are per-user global by nature; Scope only controls skill file placement and `uipro init` / `graphify install --project` / `openwiki integrations install --project` / MCP target file (project `opencode.jsonc` vs global with `--global`).
 - Default-off everywhere: MCP entries, Cloud auth, recordings. Ask once, never enable silently.
 - Never run an install without an explicit yes. Present exact commands first; the human runs them if the agent lacks permission.
 - On failure report output verbatim and stop.
-- After install, offer to record choices in the project's `AGENTS.md` skills-in-use section. Do not edit `AGENTS.md` inside stack files — the wizard does it at the end.
+- After install, record choices in the project's `AGENTS.md` skills-in-use section. Do not edit `AGENTS.md` inside stack files — the wizard does it at the end.

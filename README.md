@@ -17,7 +17,6 @@ One line per skill (first sentence of its description):
 - `observability` — Instruments code so production behavior is visible and diagnosable.
 - `parallel-dispatch` — Fan out two or more independent tasks to background subagents, then collect and synthesize results.
 - `performance` — Optimizes measured performance bottlenecks across frontend, backend, queries, and databases.
-- `project-bootstrap` — Scaffold or refresh a consumer project's AGENTS.md from the team template.
 - `security-audit` — Security guidance and vulnerability review for codebases, APIs, services, CLI tools, libraries, and daemons.
 - `seo` — Optimizes web pages for search crawlability, metadata, headings, and structured data.
 - `tech-skills` — Router to bundled technology guides (Java, Spring Boot, Python, Pydantic).
@@ -25,9 +24,43 @@ One line per skill (first sentence of its description):
 
 ## Entry points
 
-- [setup/](setup/) — `/setup` wizard source topics (routed by [setup/_index.md](setup/_index.md)): archify, drawio, ui-ux, graphify, agent-browser, browser-harness, openwiki.
-- [commands/setup.md](commands/setup.md) — the single `/setup` wizard command.
-- [templates/](templates/) — per-project `AGENTS.md` template.
+- [setup/](setup/) — `/setup` wizard source topics (routed by [setup/_index.md](setup/_index.md)): bootstrap, archify, drawio, ui-ux, graphify, agent-browser, browser-harness, openwiki.
+- [commands/setup.md](commands/setup.md) — the single `/setup` wizard command (Phase 0 bootstrap + Phase 1 optional tooling).
+- [templates/](templates/) — per-project `AGENTS.md` template (used by `/setup` Phase 0).
+- [scripts/install.sh](scripts/install.sh) — one-shot new-machine setup (idempotent).
 - [scripts/lint-skills.py](scripts/lint-skills.py) — repo linter (stdlib only; `python3 scripts/lint-skills.py`).
+
+## Setup
+
+One-time per machine:
+
+```sh
+git clone https://github.com/Mahesh-Bishnoi/skills
+cd skills && ./scripts/install.sh
+```
+
+(If `./scripts/install.sh` refuses to run, use `bash scripts/install.sh` —
+same effect. `git` preserves the script's executable bit on checkout.)
+
+The script wires the whole library globally (global `skills` entry pointing at
+this checkout, global `AGENTS.md` on fresh machines, `/setup` command) and is
+safe to re-run after `git pull`. On machines where global `AGENTS.md` already
+exists it is never overwritten — the agent merges `global-AGENTS.md` with
+explicit confirmation instead. Restart the agent and confirm with the skill list.
+
+Per project — run from the project directory:
+
+```text
+/setup
+```
+
+Phase 0 scaffolds or refreshes `AGENTS.md` from [templates/AGENTS.template.md](templates/AGENTS.template.md)
+(stack, entrypoints, commands, skills-in-use; verified content preserved) and
+verifies the global wiring. Phase 1 asks which optional tooling you need
+(diagrams, browser automation, design taste, code graph, wiki) and installs it
+project-local into `.opencode/skills/` so it advertises only in that project.
+`skills-in-use` in the project's `AGENTS.md` records the choice.
+
+Keep this checkout updated with `git pull` — no re-copying needed for globally-referenced skills. Copy a skill into `<project>/.opencode/skills/<id>-pinned/` only when it must ship with that repo (team/CI); use a different ID since explicit `skills` entries outrank `.opencode/skills` on duplicates.
 
 See [THIRD_PARTY_NOTICES](THIRD_PARTY_NOTICES) for upstream MIT sources adapted or referenced by these skills.

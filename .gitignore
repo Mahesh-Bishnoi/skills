@@ -1,2 +1,10 @@
 __pycache__/
 *.py[cod]
+
+# Local setup artifacts (wizard installs in wrong checkout — do not commit)
+.agents/
+.opencode/
+graphify-out/
+opencode.json
+opencode.jsonc
+skills-lock.json

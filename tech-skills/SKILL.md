@@ -40,7 +40,7 @@ There is no `skills/fastapi.md` — do not create one. FastAPI guidance always c
 
 ### 3. Drift rule (rescan wins)
 
-If `AGENTS.md` disagrees with manifests, manifests win. Proceed on what manifests prove, then flag the drift to the user (e.g. "`AGENTS.md` says X but `pom.xml` shows Y"). Ask the user to invoke `@project-bootstrap` to refresh. Never silently rewrite `AGENTS.md`.
+If `AGENTS.md` disagrees with manifests, manifests win. Proceed on what manifests prove, then flag the drift to the user (e.g. "`AGENTS.md` says X but `pom.xml` shows Y"). Ask the user to run `/setup` to refresh. Never silently rewrite `AGENTS.md`.
 
 ### 4. Load narrowly
 

@@ -23,7 +23,7 @@ NON_NATIVE_KEYS = {
 }
 # Skills intentionally hidden from model discovery; they stop producing the
 # hidden-skill warning but still count as hidden for handoff checks.
-ALLOWED_HIDDEN_SKILLS = {"grill", "project-bootstrap"}
+ALLOWED_HIDDEN_SKILLS = {"grill"}
 # Skills installed via /setup (not in this repo) — valid @refs after install.
 ALLOWED_EXTERNAL_SKILLS = {
     "archify", "drawio-skill", "ui-ux-pro-max", "design-taste-frontend",
@@ -37,7 +37,7 @@ USE_TRIGGER_RE = re.compile(
 )
 MAX_DESCRIPTION_CHARS = 300
 # Reference-doc patterns checked like skill bodies (warn-only for new dirs).
-ABS_PATH_PATTERNS = ("/home/", "/Users/", "](/)", "](/", "%HOME%")
+ABS_PATH_PATTERNS = ("/home/", "/Users/", "](/)", "](/", "%HOME%", "~/code/skills")
 AT_REF_RE = re.compile(r"(?<![\w/])@([a-z0-9]+(?:-[a-z0-9]+)*)(?!/)")
 THE_SKILL_RE = re.compile(r"the `([A-Za-z0-9][A-Za-z0-9-]*)` skill")
 FENCED_BLOCK_RE = re.compile(r"```.*?```", re.DOTALL)
@@ -82,6 +82,9 @@ def main() -> int:
     for p in nested:
         rel = p.relative_to(ROOT)
         if ".git" in rel.parts:
+            continue
+        # Local install artifacts (gitignored wizard outputs) are not repo skills.
+        if rel.parts[0] in {".agents", ".opencode", ".claude", "graphify-out"}:
             continue
         err(f"{rel}: nested SKILL.md not allowed; move to top-level <skill-id>/SKILL.md")
 
@@ -184,9 +187,10 @@ def main() -> int:
                 rf"ask the user to invoke\s+[`@]*{re.escape(hid)}", body, re.IGNORECASE
             ):
                 warn(f"{sid}/SKILL.md: hands off to hidden skill @{hid} without asking the user to invoke it")
-        # Canonical portable references (~/code/skills, ~/.config/) are allowed;
-        # machine-specific absolute paths are not.
-        for pat in ("/home/", "/Users/", "](/)", "](/", "%HOME%"):
+        # Portable references (~/.config/) are allowed; machine-specific
+        # absolute paths and hardcoded checkout locations are not. Paths must
+        # be relative to the skill dir or resolved at runtime ($SKILLS_DIR).
+        for pat in ("/home/", "/Users/", "](/)", "](/", "%HOME%", "~/code/skills"):
             if pat in body:
                 err(f"{sid}/SKILL.md: absolute/personal path reference {pat!r}; use paths relative to skill dir")
                 break
