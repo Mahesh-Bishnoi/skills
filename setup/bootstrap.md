@@ -39,6 +39,10 @@ Project `AGENTS.md` and existing codebase conventions override this file.
   advertises via the project-local `skills` entry. If the CLI is missing, note that
   `/setup` Phase 0.5 (`setup/skillspector.md`) installs it before any other tooling,
   so external skills can be scanned before they activate.
+- Check the containment option (report only, no installs): `command -v openshell`,
+  `command -v docker` / `command -v podman`, and whether a baseline
+  `openshell.policy.yaml` exists. If runtimes are missing, note that `/setup`
+  Phase 0.6 (`setup/openshell.md`) prompts for the runtime install before any sandbox step.
 
 ## Step 2 — Ask (only what is missing)
 
@@ -78,3 +82,4 @@ Project `AGENTS.md` and existing codebase conventions override this file.
 - [ ] Existing verified `AGENTS.md` content preserved, gaps only
 - [ ] No universal guidance duplicated into the project file
 - [ ] Skill guardrail state reported (CLI present/missing, `@skill-inspector` advertising or not)
+- [ ] Containment state reported (openshell present/missing, docker/podman present/missing, policy present/missing — no installs here)

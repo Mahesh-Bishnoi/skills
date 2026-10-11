@@ -37,3 +37,11 @@ Identifiers below are written exactly as cited in the attributing files
      (SKILL.md goal, operating rules, review workflow, score rubric, report shape).
      Scanner CLI, `.opencode` extension, and MCP server are not vendored;
      `setup/skillspector.md` guides install from upstream.
+
+8. cisco-ai-defense/skill-scanner (Apache-2.0)
+   - Second-opinion scanner — not vendored; `setup/skillspector.md`
+     guides install from PyPI (`cisco-ai-skill-scanner`) and local static use.
+
+9. NVIDIA/OpenShell (Apache-2.0)
+   - Sandboxed agent runtime — not vendored; `setup/openshell.md`
+     guides install from upstream plus a reviewed project policy file.

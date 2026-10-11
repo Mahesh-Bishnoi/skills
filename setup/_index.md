@@ -7,7 +7,8 @@ Resolve the checkout in this order: `$SKILLS_DIR` env override, then the pointer
 ## Files
 
 - `bootstrap.md` — scaffold or refresh the project's `AGENTS.md` (`/setup` Phase 0, always runs first).
-- `skillspector.md` — SkillSpector scanner CLI + `@skill-inspector` scan gate (`/setup` Phase 0.5, runs before any other tooling install so external skills are scanned before they activate).
+- `skillspector.md` — SkillSpector scanner CLI + `@skill-inspector` scan gate, with opt-in Cisco second opinion on `CAUTION` (`/setup` Phase 0.5, runs before any other tooling install so external skills are scanned before they activate).
+- `openshell.md` — OpenShell sandbox + container runtime + baseline policy, all opt-in (`/setup` Phase 0.6, containment for the rest of setup).
 - `archify.md` — validated architecture/workflow/sequence/dataflow/lifecycle diagrams as standalone HTML (`@archify` after install).
 - `drawio.md` — editable `.drawio` diagrams from language/code/IaC/SQL/API sources (`@drawio-skill` after install).
 - `ui-ux.md` — design-system generator + frontend taste (`@ui-ux-pro-max`, `@design-taste-frontend` after install).
@@ -23,11 +24,13 @@ Resolve the checkout in this order: `$SKILLS_DIR` env override, then the pointer
 - Design: ui-ux-pro-max = design-system generator; taste (`design-taste-frontend`) = anti-slop taste enforcement. Usually installed together.
 - Code graph: Graphify = local codebase querying for large/unfamiliar repos.
 - Knowledge: OpenWiki = linked Markdown wiki the agent searches/reads for concrete architecture questions; Graphify = exhaustive local code graph. Install one or both.
+- Containment: OpenShell = run the agent inside a kernel-enforced sandbox (filesystem, process, network, credentials) under a reviewed `openshell.policy.yaml`. Opt-in per run, not a skill install.
 
 ## Rules for `/setup`
 
 - Phase 0 is always bootstrap (`bootstrap.md`): wire this project to the library project-locally + project `AGENTS.md`. If `AGENTS.md` is already complete, verify it and move on.
-- Phase 0.5 is always the skill guardrail (`skillspector.md`): check/install the `skillspector` CLI and confirm `@skill-inspector` advertises, before any other tooling install. Every later external-skill install is scanned before it activates: `CAUTION`/`REJECT` shows exact reasons and the user decides to continue or not.
+- Phase 0.5 is always the skill guardrail (`skillspector.md`): check/install the `skillspector` CLI and confirm `@skill-inspector` advertises, before any other tooling install. Every later external-skill install is scanned before it activates: `CAUTION`/`REJECT` shows exact reasons and the user decides to continue or not. On `CAUTION`, offer the Cisco `skill-scanner` second opinion (local static core, nothing leaves host) before asking to continue.
+- Phase 0.6 is always the containment offer (`openshell.md`, opt-in, default-off): check `openshell` + `docker`/`podman` + baseline policy, offer to install what is missing (runtime prompt only when neither runtime is present) and to run the rest of setup sandboxed. Never enable silently.
 - Default scope is project-local. The library itself is wired per project (`<project>/.opencode/opencode.jsonc` `skills` entry pointing at the checkout's `skills/` subdirectory, so it advertises only where `/setup` ran — each teammate runs `/setup` once for their own checkout path and never commits the personal path). A bare-checkout entry is the legacy layout (it advertised README/AGENTS as bogus skills) — replace it with `<checkout>/skills`. Optional tooling goes into `.opencode/skills` in the current repo (committed for team/CI). Global (`-g` / `~/.config/opencode/skills`, or a global `skills` array entry) only on explicit opt-in — global installs advertise in every session.
 - CLI installs via `npm install -g` / `uv tool install` are per-user global by nature; Scope only controls skill file placement and `uipro init` / `graphify install --project` / `openwiki integrations install --project` / MCP target file (project `opencode.jsonc` vs global with `--global`).
 - Default-off everywhere: MCP entries, Cloud auth, recordings. Ask once, never enable silently.

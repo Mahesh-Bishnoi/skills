@@ -7,6 +7,7 @@ Upstream:
 - SkillSpector security scanner for AI agent skills (Apache-2.0). Docs at https://docs.nvidia.com/skills/scanning-agent-skills
 - Install via `uv tool install git+https://github.com/NVIDIA/skillspector.git` (add the `[mcp]` extra for the MCP server). Docker image builds locally from the upstream Dockerfile.
 - OpenCode extension ships upstream as `.opencode/` (a `skillspector_scan` tool plus a `/skillspector` command wrapping the CLI).
+- Second opinion (opt-in, never vendored): Cisco AI Defense `skill-scanner` (Apache-2.0, PyPI `cisco-ai-skill-scanner`). Docs at https://cisco-ai-defense.github.io/docs/skill-scanner — multi-engine static analysis (YAML + YARA-X, AST/dataflow, shell-pipeline taint) with optional local LLM judge. Static core sends nothing off-host.
 
 Project `AGENTS.md` and existing codebase conventions override this file.
 
@@ -20,6 +21,7 @@ Run these checks and report the result before asking anything:
 command -v python3; python3 --version 2>/dev/null || true
 command -v uv; uv --version 2>/dev/null || true
 command -v skillspector; skillspector --version 2>/dev/null || true
+command -v skill-scanner; skill-scanner --version 2>/dev/null || true
 echo "SKILLSPECTOR_PROVIDER=${SKILLSPECTOR_PROVIDER:-<unset>}"
 command -v opencode; opencode --version 2>/dev/null || true
 ls .opencode/skills 2>/dev/null || true
@@ -30,6 +32,7 @@ Installed means:
 - `skillspector` CLI present (`skillspector --version` prints a version).
 - Provider configured: `SKILLSPECTOR_PROVIDER=opencode_cli` (preferred — reuses the user's OpenCode auth, no key) or another provider's credential env for non-interactive use.
 - Library skill: `@skill-inspector` advertises via the Phase 0 project-local `skills` entry (no copy needed).
+- Second opinion (optional): `skill-scanner` CLI present (`skill-scanner --version` prints a version). Missing is fine — offer it only on SkillSpector `CAUTION` or explicit request.
 
 If CLI + provider are ready and the user only wants the scan gate, skip to Step 4. If MCP or the OpenCode command was requested and is also present, skip to Step 4.
 
@@ -41,7 +44,8 @@ Ask only what is missing. Defaults in brackets. Wait for each answer.
 2. `LLM provider: opencode_cli (your OpenCode subscription, no key) or another provider [opencode_cli]?` Static scans (`--no-llm`) are the default; LLM is explicit opt-in per scan since skill content leaves the host. Other providers (hosted keys, local Ollama, gateways) suit CI or machines without OpenCode auth.
 3. `Also install the OpenCode /skillspector command (copies upstream .opencode tool + command) [no]?` Default-off; project-local copy only on opt-in.
 4. `Include the MCP server [no]?` Default-off. Opt-in installs the `[mcp]` extra and registers the server.
-5. `Confirm install?` The agent must never install software silently. Present the exact commands and get an explicit yes. The human runs them if the agent lacks permission.
+5. `Second opinion: when SkillSpector says CAUTION, also run Cisco skill-scanner locally (static core, nothing leaves host) [yes]? Install it now if missing [no]?` Default is ask-at-CAUTION-time, not pre-install. The Cisco LLM judge (`--use-llm`, needs `SKILL_SCANNER_LLM_API_KEY`) stays explicit opt-in per scan.
+6. `Confirm install?` The agent must never install software silently. Present the exact commands and get an explicit yes. The human runs them if the agent lacks permission.
 
 ## Step 3 — Install (on explicit yes only)
 
@@ -121,13 +125,36 @@ skillspector baseline ./my-skill/ -o .skillspector-baseline.yaml
 skillspector scan ./my-skill/ --baseline .skillspector-baseline.yaml
 ```
 
+Second opinion (only on SkillSpector `CAUTION`, or on explicit request — never automatic on `APPROVE`/`REJECT`). Static core stays local; nothing leaves the host:
+
+```sh
+uv tool install cisco-ai-skill-scanner
+skill-scanner --version
+skill-scanner scan ./my-skill --policy balanced --fail-on-severity high
+```
+
+JSON form for the `/setup` scan gate:
+
+```sh
+skill-scanner scan ./my-skill --policy balanced --fail-on-severity high --format json --output /tmp/cisco-second-opinion.json
+```
+
+Cisco LLM judge (only on explicit per-scan yes; needs a key and sends skill content off-host):
+
+```sh
+export SKILL_SCANNER_LLM_API_KEY=...
+skill-scanner scan ./my-skill --use-llm --policy low-noise --fail-on-severity high
+```
+
+A second `CAUTION`/fail from Cisco does not auto-block — it feeds the `@skill-inspector` semantic review and the user still decides to continue or not.
+
 If a command fails, report the output verbatim and stop. Common causes: Python < 3.12, missing `uv`, no network for the git install, or `opencode` CLI not authenticated for `opencode_cli`.
 
 ## Step 4 — Hand off (no duplicate work)
 
 Once installed (or already installed), stop setup and hand off:
 
-- Tell the user the installed entry points: `skillspector scan <target> --no-llm`, `@skill-inspector` for verdicts (`APPROVE` / `CAUTION` / `REJECT`), plus `/skillspector` or the `scan_skill` MCP tool only if those extras were installed.
+- Tell the user the installed entry points: `skillspector scan <target> --no-llm`, `@skill-inspector` for verdicts (`APPROVE` / `CAUTION` / `REJECT`), plus `/skillspector` or the `scan_skill` MCP tool only if those extras were installed. Name the second-opinion path if agreed: `skill-scanner scan <target> --policy balanced --fail-on-severity high` on SkillSpector `CAUTION`.
 - Record the choice in the project's `AGENTS.md` skills-in-use section (the `/setup` wizard does this at the end — do not edit `AGENTS.md` here).
 - Stop. No skill reviews in this file.
 
@@ -138,6 +165,7 @@ Once installed (or already installed), stop setup and hand off:
 - [ ] CLI installed per-user; no credentials written to files
 - [ ] `opencode_cli` preferred for interactive LLM scans; alternatives only on explicit choice
 - [ ] OpenCode command and MCP left out unless explicitly opted in (default-off)
+- [ ] Second opinion left as ask-at-CAUTION unless user opted into pre-install
 - [ ] No install command ran without explicit user yes
 - [ ] No upstream files vendored into this repo
 - [ ] Hand-off named the installed entry points and stopped without analysis
