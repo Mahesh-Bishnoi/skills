@@ -35,6 +35,10 @@ Project `AGENTS.md` and existing codebase conventions override this file.
 - Check the global `~/.config/opencode/AGENTS.md` exists (sourced from
   `global-AGENTS.md` in the checkout). If missing, offer to install it; never
   inline universal guidance into the project file.
+- Check the skill guardrail: `command -v skillspector` and whether `@skill-inspector`
+  advertises via the project-local `skills` entry. If the CLI is missing, note that
+  `/setup` Phase 0.5 (`setup/skillspector.md`) installs it before any other tooling,
+  so external skills can be scanned before they activate.
 
 ## Step 2 — Ask (only what is missing)
 
@@ -73,3 +77,4 @@ Project `AGENTS.md` and existing codebase conventions override this file.
 - [ ] Legacy global entry reported / removed only on explicit yes
 - [ ] Existing verified `AGENTS.md` content preserved, gaps only
 - [ ] No universal guidance duplicated into the project file
+- [ ] Skill guardrail state reported (CLI present/missing, `@skill-inspector` advertising or not)

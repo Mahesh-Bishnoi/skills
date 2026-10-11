@@ -31,5 +31,7 @@
 
 - Wired project-locally via `/setup`: this project's `.opencode/opencode.jsonc` `skills` entry points at the skills checkout's `skills/` subdirectory (`<checkout>/skills`, not the checkout root), so library skills advertise only here. Each teammate runs `/setup` once for their own checkout path; never commit a personal checkout path.
 - Optional tooling via `/setup` (diagrams, browser automation, design taste, code graph): installed project-local into `.opencode/skills/` so it advertises only here. Record chosen tools + scope below.
+- Skill guardrail via `/setup` Phase 0.5: `skillspector` CLI + `@skill-inspector` (static-first, LLM opt-in via `SKILLSPECTOR_PROVIDER=opencode_cli`). Every external-skill install is scanned before it activates; `CAUTION`/`REJECT` verdicts + user decisions logged below.
+- Scan log: `<none | e.g. graphify@<ref>: APPROVE (12/100) — installed; archify@<ref>: CAUTION (E1) — user continued yes>`
 - Pinned copies (only if some skill must ship with this repo): `<none | .opencode/skills/<id>-pinned/ + why — use a different ID, explicit skills entries outrank .opencode/skills on duplicates>`
 - Always-load rules for this project: `<none | e.g. always load <id> when touching <area>>`

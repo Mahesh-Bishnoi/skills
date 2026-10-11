@@ -18,13 +18,14 @@ One line per skill (first sentence of its description):
 - `parallel-dispatch` — Fan out two or more independent tasks to background subagents, then collect and synthesize results.
 - `performance` — Optimizes measured performance bottlenecks across frontend, backend, queries, and databases.
 - `security-audit` — Security guidance and vulnerability review for codebases, APIs, services, CLI tools, libraries, and daemons.
+- `skill-inspector` — Reviews third-party agent skills before install (SkillSpector static evidence plus semantic review); gates `/setup` external-skill installs.
 - `seo` — Optimizes web pages for search crawlability, metadata, headings, and structured data.
 - `tech-skills` — Router to bundled technology guides (Java, Spring Boot, Python, Pydantic).
 - `web-quality-audit` — Runs an evidence-led web quality audit across performance, accessibility, SEO, and best practices.
 
 ## Entry points
 
-- [setup/](setup/) — `/setup` wizard source topics (routed by [setup/_index.md](setup/_index.md)): bootstrap, archify, drawio, ui-ux, graphify, agent-browser, browser-harness, openwiki.
+- [setup/](setup/) — `/setup` wizard source topics (routed by [setup/_index.md](setup/_index.md)): bootstrap, skillspector guardrail, archify, drawio, ui-ux, graphify, agent-browser, browser-harness, openwiki.
 - [commands/setup.md](commands/setup.md) — the single `/setup` wizard command (Phase 0 bootstrap + Phase 1 optional tooling).
 - [templates/](templates/) — per-project `AGENTS.md` template (used by `/setup` Phase 0).
 - [scripts/install.sh](scripts/install.sh) — one-shot new-machine setup (idempotent).

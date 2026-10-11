@@ -31,3 +31,9 @@ Identifiers below are written exactly as cited in the attributing files
 
 6. vojtaholik/good-css (MIT, Copyright (c) 2026 Vojta Holik)
    - `good-css` — vendored in skills/good-css/SKILL.md + skills/good-css/references/.
+
+7. NVIDIA/SkillSpector (Apache-2.0)
+   - `skills/skill-inspector` — workflow ported from SkillSpector `skill-inspector`
+     (SKILL.md goal, operating rules, review workflow, score rubric, report shape).
+     Scanner CLI, `.opencode` extension, and MCP server are not vendored;
+     `setup/skillspector.md` guides install from upstream.

@@ -7,7 +7,7 @@ description: Review PRs, commits, diffs, modules, folders, or whole repos for co
 
 Review-only skill. Report findings, change no code, never merge, deploy, or approve on the author's behalf. The best review is high-signal and actionable: concrete cases with file and line references, ordered by severity, no vague worries or style taste.
 
-Project `AGENTS.md` and existing codebase conventions override this skill. Companion skills: `clean-code` for depth/SOLID/anti-slop judgments, `security-audit` for deep security (ask the user to invoke `@security-audit`, do not duplicate).
+Project `AGENTS.md` and existing codebase conventions override this skill. Companion skills: `clean-code` for depth/SOLID/anti-slop judgments, `security-audit` for deep security (ask the user to invoke `@security-audit`, do not duplicate), `skill-inspector` for third-party skill installs (ask the user to invoke `@skill-inspector`, do not duplicate).
 
 ## 0. Resolve the target
 

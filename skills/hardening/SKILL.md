@@ -22,6 +22,7 @@ Source: inspired by `addyosmani/agent-skills` (`security-and-hardening`, MIT). R
 **NOT for:**
 
 - Deep audit of an existing codebase — ask the user to invoke `@security-audit` (this skill builds controls in; that skill finds missing ones)
+- Vetting a third-party skill install — ask the user to invoke `@skill-inspector` (static evidence plus semantic verdict before install)
 - Diagnosing an active bug or exploit — use `debug` (this skill prevents the next one)
 - Telemetry design beyond redaction — see `observability` (this skill covers only: no secrets/PII in logs)
 
