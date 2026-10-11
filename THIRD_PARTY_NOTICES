@@ -28,3 +28,6 @@ Identifiers below are written exactly as cited in the attributing files
 
 5. langchain-ai/openwiki (MIT)
    - `integrations/openwiki/SKILL.md` + CLI docs — referenced in setup/openwiki.md (no files vendored).
+
+6. vojtaholik/good-css (MIT, Copyright (c) 2026 Vojta Holik)
+   - `good-css` — vendored in skills/good-css/SKILL.md + skills/good-css/references/.
