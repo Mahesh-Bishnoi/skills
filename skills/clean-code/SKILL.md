@@ -11,7 +11,7 @@ Goal: code that stays easy to change after 100 edits by different agents. Every 
 2. Read the project's domain glossary (`GLOSSARY.md` or similar) and architecture decision records (location per the `adr-skill` convention rule — match existing, default `docs/decisions/`) if present. Use domain terms for names; don't re-litigate recorded decisions without a concrete new reason.
 3. State the change in one sentence. If you can't, split the task.
 4. Identify the owner: which module owns this behavior? Put it there, not where it's convenient.
-5. Map the blast radius before editing: list every place the change must reach (callers, tests, fixtures, config, exports) and what it could break for users (data destroyed/exposed, callers that stop working). Extra features are not scope.
+5. Map the blast radius before editing: list every place the change must reach (callers, tests, fixtures, config, exports, docs/ runnable references, entry wiring (app entrypoints, CLI commands, scheduled jobs)) and what it could break for users (data destroyed/exposed, callers that stop working). Extra features are not scope.
 6. Write or locate the test that will prove it works (§7).
 7. Prefer the smallest complete diff that solves the problem cleanly. Boy-scout only the code you touch (rename unclear vars, add missing types, remove dead code in touched functions) — no module restructures, new patterns, or edits to files the task doesn't otherwise require. Be economical about the solution, never about the change itself: finish every caller, test, and fixture the task touches.
 
@@ -185,11 +185,12 @@ No pattern without its trigger. Patterns obey the one-vs-two-adapter rule.
 - Focus where change happens: `git log --oneline` / file churn reveals hot spots. Refactoring cold, stable code is usually waste (YAGNI).
 - Look for friction: one concept spread across many tiny modules; shallow modules; tightly coupled modules leaking across seams; code untestable through its current interface.
 - Deepen: merge shallow fragments behind one small interface, pick the seam by dependency category (§7), replace old tests with interface tests.
-- Refactor with tests green before and after; keep refactor commits separate from behavior changes. Opportunistic cleanup stays adjacent to the task; unrelated restructures are a separate task, not boy-scouting.
+- Refactor with tests green before and after; keep refactor commits separate from behavior changes. Refactor-only commits carry a no-behavior-change proof — golden/pinned output or a journey test covering the moved path, not just a green suite. Opportunistic cleanup stays adjacent to the task; unrelated restructures are a separate task, not boy-scouting.
+- Re-verify queued/planned splits at execution time: a split that passed the deletion test when planned must pass it again when executed — plans age, code drifts.
 
 | Smell | Fix |
 |---|---|
-| God class / file >~400 lines with unrelated responsibilities | Split by responsibility |
+| Module with ≥2 reasons to change (name needs "and", >1 unrelated dependency group) | Split per reason — line count alone is a pointer, never a trigger |
 | Concept scattered across many tiny files | Merge into one deep module |
 | Long function | Extract private helper; name the intent |
 | Long param list / data clumps | Parameter object / value type |

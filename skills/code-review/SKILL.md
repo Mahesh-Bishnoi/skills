@@ -23,10 +23,11 @@ Review what the user names; nothing named means uncommitted changes, or the last
 Read before judging. A change can break code it does not touch.
 
 1. Read the project `AGENTS.md` for stack, entry points, and conventions. Newly introduced violations of its explicit rules are findings; silent or inferred "spirit" violations are not.
-2. For diffs: read every hunk, then the enclosing function for each hunk, then callers of every changed function, the functions it calls, and the tests. Find expected load from README or config (one person vs many users/processes) and state the load assumed.
+2. For diffs: read every hunk, then the enclosing function for each hunk, then callers of every changed function, the functions it calls, and the tests. Then check entry wiring the diff could orphan: app entrypoints, CLI commands, scheduled jobs. Find expected load from README or config (one person vs many users/processes) and state the load assumed.
 3. For folder/repo: map first — README, build/deploy config, dependencies, entry points, tests. Trace main flows and read fully the paths with user input, money, auth, data writes, background jobs, and shared state. Before calling code unused, grep the whole tree including tests, fixtures, config, and string references.
-4. For deleted or replaced lines, name the invariant the old code enforced and search the new code for where it is re-established. A dropped guard, narrowed validation, lost error path, or deleted test covering a real case is a candidate finding.
+4. For deleted or replaced lines, name the invariant the old code enforced and search the new code for where it is re-established. A dropped guard, narrowed validation, lost error path, or deleted test covering a real case is a candidate finding. Extend the same check to docs: grep `docs/` and README for moved modules, symbols, and entrypoints — stale runnable instructions are findings (fix live docs; closed decision records get a superseding note, not a rewrite).
 5. A `shortcut:` comment that names its limit is a decision, not a finding.
+6. For moved symbols, expect caller/test imports updated at the new path; flag backward-compat shims or re-exports unless external consumers exist.
 
 ## 2. Review in this order
 
