@@ -5,9 +5,8 @@ Source of truth: `global-AGENTS.md` in the skills repo (installed by `scripts/in
 ## Skills
 
 - Skills live in the skills-repo checkout under `skills/`, wired per project by `/setup` via that project's `.opencode/opencode.jsonc` `skills` entry pointing at `<checkout>/skills` — library skills advertise only in projects where `/setup` ran. Never wire the bare checkout root: OpenCode advertises root-level `*.md` (README/AGENTS/global-AGENTS) as bogus skills. Each skill's frontmatter `description` is the source of truth for *when* to invoke it. `/setup` itself is a global command and stays visible everywhere; the pointer file at `~/.config/opencode/skills-repo.path` only locates the checkout and advertises nothing.
-- Before starting a task, scan the advertised skill list. When a description matches the task, load it with the `skill` tool (or honor the user's `@<skill-id>` mention) and follow it.
 - Do not guess a skill's content from its name — load the body first.
-- User-only skills (`opencode/autoinvoke: false`) are never loaded uninvited; load them only on explicit user request.
+- Load `opencode/autoinvoke: false` skills only on explicit user request.
 - Project setup runs via the `/setup` slash command, not via skills. Phase 0 scaffolds/refreshes the project's `AGENTS.md`; Phase 1 installs optional tooling (diagrams, browser automation, design taste, code graph). Setup docs live in `setup/` inside the checkout as plain references and are never advertised. Installed tooling defaults to project-local (`.opencode/skills`, OpenCode-only) so it advertises only in the project that uses it; global installs are opt-in only. `.agents/skills` is the universal target (also discovered by OpenCode) for users working across agents; `/setup` asks which target to use.
 - `security-audit` full-audit mode is the only workflow with sandbox + coverage-ledger + critic ceremony; no other skill requires it.
 - Load `skill-inspector` before installing or keeping third-party agent skills.
@@ -17,7 +16,7 @@ Source of truth: `global-AGENTS.md` in the skills repo (installed by `scripts/in
 
 - Load the `clean-code` skill before any non-trivial code change (new feature, refactor, bug fix spanning more than a few lines, or code review).
 - Load the `hardening` skill when the change touches auth, sessions, user input, secrets, file uploads, server-side fetches, dependencies, personal data, or LLM output.
-- Read the project's `AGENTS.md` for stack, entrypoints, and conventions before writing code. If it names a formatter/linter, run it after edits.
+- If the project's `AGENTS.md` names a formatter/linter, run it after edits.
 - Edit existing files over creating new ones. Match surrounding style. No speculative abstractions.
 - Never commit secrets. Use `{env:VAR}`-style references in config, never literal keys.
 
