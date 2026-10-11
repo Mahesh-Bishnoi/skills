@@ -129,6 +129,7 @@ Rules:
 - Deterministic (no real time, network, randomness, sleeps, shared state), independent (any order, parallel), fast (unit suite in seconds).
 - Prefer real objects > in-memory fakes > stubs > mocks. Mock only ports you own, never third-party internals or the unit under test. Needing 5 mocks = too many dependencies.
 - Pyramid: many tests on the pure core and module interfaces, fewer integration tests on adapters, few end-to-end tests on critical paths. Run the same contract suite against fake and real adapters.
+- Coverage floor + tiers: don't ship a suite with no enforced gate — set/keep the project's coverage floor. Hermetic unit tests by default; service-dependent tests (DB, emulator, container) must be runnable in CI and skip cleanly otherwise (never silently absent). State-changing paths (migrations, storage adapters) proved with round-trips (e.g. up→down→up / write→read→delete), not happy-path-only.
 
 **Never**
 - Weaken, skip, or delete a failing test to make it pass. Change a test only when the *requirement* changed — say so explicitly.
@@ -210,5 +211,6 @@ No pattern without its trigger. Patterns obey the one-vs-two-adapter rule.
 - [ ] Tests exercise behavior through the public interface, are deterministic, and were seen failing first.
 - [ ] No dead code, debug output, unused params, commented-out code, or narrating comments.
 - [ ] Diff is minimal and scoped; no unrelated reformatting.
-- [ ] Formatter, linter, type-checker, and tests run and pass — report what you ran.
+- [ ] Gates calibrated to strictest that stays green (a trivially-green gate is the bug): strictest type-checker mode the codebase keeps green (e.g. `mypy --strict` / `pyright --strict` / `tsc --strict` or equivalent; no blanket `ignore_missing_imports` — per-module override with reason only); lint rule set widened past starter defaults; coverage gate set and met. Report commands + config files touched.
+- [ ] Formatter, linter, type-checker, coverage gate, and tests run and pass — report what you ran.
 - [ ] Reply ends with 1–2 lines: what was skipped or not checked, and any risk the user must know.
