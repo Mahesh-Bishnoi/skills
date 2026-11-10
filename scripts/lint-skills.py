@@ -25,6 +25,8 @@ NON_NATIVE_KEYS = {
 # Skills intentionally hidden from model discovery; they stop producing the
 # hidden-skill warning but still count as hidden for handoff checks.
 ALLOWED_HIDDEN_SKILLS = {"grill"}
+# Skills whose bodies document the Claude Desktop `mcpServers` config format on purpose.
+ALLOWED_CLAUDE_FORMAT_SKILLS = {"build-mcp-app"}
 # Skills installed via /setup (not in this repo) — valid @refs after install.
 ALLOWED_EXTERNAL_SKILLS = {
     "archify", "drawio-skill", "ui-ux-pro-max", "design-taste-frontend",
@@ -180,7 +182,7 @@ def main() -> int:
                 warn(f"skills/{sid}/SKILL.md: description lacks use-trigger wording (e.g. 'Use when ...')")
             if len(desc) > MAX_DESCRIPTION_CHARS:
                 warn(f"skills/{sid}/SKILL.md: description is {len(desc)} chars (keep under ~{MAX_DESCRIPTION_CHARS})")
-        if "mcpServers" in text:
+        if "mcpServers" in text and sid not in ALLOWED_CLAUDE_FORMAT_SKILLS:
             err(f"skills/{sid}/SKILL.md: `mcpServers` is Claude format; V2 uses `mcp.servers`")
         # Cross-skill references must resolve (warn-only). Strip fenced blocks
         # so code samples (JSDoc tags, npm scopes, payloads) don't false-positive.
