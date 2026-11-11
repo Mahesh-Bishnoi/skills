@@ -14,6 +14,7 @@ One line per skill (first sentence of its description):
 - `git-worktrees` — Isolated feature work via git worktrees - create, list, remove, prune, repair when tree is dirty, parallel branches, or urgent fix needed.
 - `grill` — Relentless one-question-at-a-time interview that extracts what the user actually wants and sharpens plans or designs.
 - `hardening` — Hardens code against vulnerabilities while building.
+- `modern-web-guidance` — Searches Chrome's Modern Web Guidance for focused, Baseline-aware recommendations.
 - `observability` — Instruments code so production behavior is visible and diagnosable.
 - `parallel-dispatch` — Fan out two or more independent tasks to background subagents, then collect and synthesize results.
 - `performance` — Optimizes measured performance bottlenecks across frontend, backend, queries, and databases.
