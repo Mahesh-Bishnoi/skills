@@ -1,0 +1,13 @@
+# Skill bundle manifest: lets a subpath install of this composite skill
+# (apm install Mahesh-Bishnoi/skills/skills/web-quality-audit#<tag>) pull the
+# sibling skills it orchestrates. Ignored when the whole collection is
+# installed - consumers then select skills via --skill.
+name: web-quality-audit
+version: 0.1.0
+description: Evidence-led web quality audit orchestrating performance, accessibility, and SEO skills.
+license: MIT
+dependencies:
+  apm:
+    - Mahesh-Bishnoi/skills/skills/performance#v0.1.0
+    - Mahesh-Bishnoi/skills/skills/accessibility#v0.1.0
+    - Mahesh-Bishnoi/skills/skills/seo#v0.1.0

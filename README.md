@@ -26,7 +26,7 @@ One line per skill (first sentence of its description):
 
 ## Entry points
 
-- [setup/](setup/) — `/setup` wizard source topics (routed by [setup/_index.md](setup/_index.md)): bootstrap, skillspector guardrail, archify, drawio, ui-ux, graphify, agent-browser, browser-harness, openwiki.
+- [setup/](setup/) — `/setup` wizard source topics (routed by [setup/_index.md](setup/_index.md)): bootstrap, APM-managed skills, skillspector guardrail, archify, drawio, ui-ux, graphify, agent-browser, browser-harness, openwiki.
 - [commands/setup.md](commands/setup.md) — the single `/setup` wizard command (Phase 0 bootstrap + Phase 1 optional tooling).
 - [templates/](templates/) — per-project `AGENTS.md` template (used by `/setup` Phase 0).
 - [scripts/install.sh](scripts/install.sh) — one-shot new-machine setup (idempotent).
@@ -71,6 +71,26 @@ Phase 1 asks which optional tooling you need
 project-local into `.opencode/skills/` so it advertises only in that project.
 `skills-in-use` in the project's `AGENTS.md` records the choice.
 
-Keep this checkout updated with `git pull` — no re-copying needed for project-local `skills` entries pointing at its `skills/` subdirectory. If a project still points at the bare checkout root (legacy layout that advertised README/AGENTS as skills), replace it with `<checkout>/skills`. Copy a skill into `<project>/.opencode/skills/<id>-pinned/` only when it must ship with that repo (team/CI); use a different ID since explicit `skills` entries outrank `.opencode/skills` on duplicates.
+Keep this checkout updated with `git pull` — no re-copying needed for project-local `skills` entries pointing at its `skills/` subdirectory. If a project still points at the bare checkout root (legacy layout that advertised README/AGENTS as skills), replace it with `<checkout>/skills`. When skills must ship with a project repo (team/CI), use APM-managed mode below instead of manual copies.
+
+## Team / CI sharing via APM
+
+[APM](https://github.com/microsoft/apm) (Agent Package Manager) turns this library into a pinned, lockfile-backed dependency. The project commits `apm.yml` + `apm.lock.yaml` + the deployed `.agents/skills/` tree; teammates and CI reproduce it byte-for-byte — no personal checkout paths, no silent drift.
+
+```sh
+# in the project repo (APM CLI; installs from GitHub, pinned to a release tag)
+apm install Mahesh-Bishnoi/skills#v0.1.0 --skill clean-code --skill debug --target opencode
+```
+
+- `--skill` cherry-picks from the collection (repeatable); the selection is persisted in the project's `apm.yml` and lockfile, so a bare `apm install` is deterministic afterwards. Omit `--skill` to install all skills.
+- Skills deploy to `.agents/skills/` — discovered by OpenCode and other `.agents`-aware harnesses (Claude Code, Copilot, Cursor, Codex, ...). Commit `apm.yml`, `apm.lock.yaml`, and `.agents/skills/`; `apm_modules/` is cache and is auto-gitignored.
+- Composite skills carry their dependencies: `apm install Mahesh-Bishnoi/skills/skills/web-quality-audit#v0.1.0` also installs `performance`, `accessibility`, and `seo`.
+- CI: `apm install --frozen` (fails on manifest/lockfile drift) plus `apm audit` (per-file content hashes; detects hand-edits and hidden-Unicode tampering).
+- Updates: `apm outdated`, then `apm update` — or bump the tag in `apm.yml` and re-install. Re-scan updated skills with `skill-inspector` before use.
+- One mode per project per skill ID: don't mix checkout wiring and APM-deployed copies of the same skill (duplicate-ID shadowing — explicit `skills` config entries outrank discovered copies).
+
+`/setup` offers this as the APM-managed wiring mode ([setup/apm.md](setup/apm.md)). Checkout wiring stays the author's live-edit mode (edit here → `git pull` propagates); APM is the distribution mode. Manual pinned copies (`<project>/.opencode/skills/<id>-pinned/`, different ID) remain the fallback for environments without APM.
+
+Releases: the root `apm.yml` version and the git tag (`vX.Y.Z`) are bumped together; composite-skill manifests pin their siblings to the same tag.
 
 See [THIRD_PARTY_NOTICES](THIRD_PARTY_NOTICES) for upstream MIT sources adapted or referenced by these skills.

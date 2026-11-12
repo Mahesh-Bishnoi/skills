@@ -4,6 +4,7 @@ __pycache__/
 # Local setup artifacts (wizard installs in wrong checkout — do not commit)
 .agents/
 .opencode/
+apm_modules/
 graphify-out/
 opencode.json
 opencode.jsonc

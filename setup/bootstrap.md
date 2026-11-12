@@ -29,6 +29,11 @@ Project `AGENTS.md` and existing codebase conventions override this file.
   report that the library currently advertises in every project and offer to
   remove the global entry (e.g. via `scripts/install.sh --remove-global`,
   explicit yes before writing).
+- Check whether the project is APM-managed: read `apm.yml` if present and look
+  for `Mahesh-Bishnoi/skills` dependencies. If found, follow `setup/apm.md`
+  instead of checkout wiring for those skill IDs (verify with
+  `apm install --frozen` + `apm audit`, explicit yes); report any checkout
+  `skills` entry covering the same IDs as a duplicate-ID shadowing conflict.
 - Check whether the project has `AGENTS.md` and whether every template
   placeholder is filled. If verified content already exists, preserve it —
   only fill gaps or reconcile drift.
@@ -48,6 +53,7 @@ Project `AGENTS.md` and existing codebase conventions override this file.
 
 - If the pointer file is missing or stale: `Rewrite the pointer file with this checkout path [yes]?`
 - If this project is not wired: `Add the checkout's skills/ dir to this project's .opencode/opencode.jsonc skills and re-verify [yes]?`
+- If the project must ship library skills with the repo (team/CI): `Use APM-managed mode (pinned apm.yml + lockfile + .agents/skills/, committed) instead of checkout wiring for those skills [yes]?` — on yes, follow `setup/apm.md`; checkout wiring remains for the author's live-edit loop and for skills not shipped via APM.
 - If a legacy checkout-root entry exists (project-local or global): `Replace the bare checkout path with its skills/ subdirectory [yes]?`
 - If a legacy global entry exists: `Remove the library from the global skills array so it stops advertising everywhere [yes]?`
 - Only on explicit yes do any writes happen.
@@ -60,8 +66,9 @@ Project `AGENTS.md` and existing codebase conventions override this file.
    path (`<checkout>/skills`) to its `skills` array (no duplicates; drop any
    legacy bare-`<checkout>` entry it replaces). This entry is machine-local:
    never commit a personal checkout path — each teammate runs `/setup` once
-   to wire their own checkout. Team-shared skills still ship as pinned copies
-   under `.opencode/skills/`, not via this entry.
+   to wire their own checkout. Team-shared skills ship via APM (`setup/apm.md`:
+   pinned `apm.yml` + lockfile + `.agents/skills/`, committed), not via this
+   entry; manual pinned copies under `.opencode/skills/` are the no-APM fallback.
 3. Inspect the target project just enough to fill every placeholder: root
    manifests, entrypoints, test/lint/typecheck commands, major directories.
    Prefer executable sources (configs, scripts, CI) over prose.
@@ -78,6 +85,7 @@ Project `AGENTS.md` and existing codebase conventions override this file.
 
 - [ ] Checkout resolved via `$SKILLS_DIR` / pointer file (staleness checked)
 - [ ] Project-local `skills` entry checked before any write
+- [ ] APM-managed state checked (`apm.yml` library deps); no checkout entry shadowing APM-deployed skill IDs
 - [ ] Legacy global entry reported / removed only on explicit yes
 - [ ] Existing verified `AGENTS.md` content preserved, gaps only
 - [ ] No universal guidance duplicated into the project file

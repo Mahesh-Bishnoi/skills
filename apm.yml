@@ -1,0 +1,10 @@
+name: mahesh-bishnoi-skills
+version: 0.1.0
+description: Reusable agent skills library - clean code, debugging, security, web quality, and more.
+author: Mahesh Bishnoi
+license: MIT
+repository: https://github.com/Mahesh-Bishnoi/skills
+keywords:
+  - opencode
+  - skills
+  - agent-skills

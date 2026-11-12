@@ -7,6 +7,7 @@ Resolve the checkout in this order: `$SKILLS_DIR` env override, then the pointer
 ## Files
 
 - `bootstrap.md` — scaffold or refresh the project's `AGENTS.md` (`/setup` Phase 0, always runs first).
+- `apm.md` — APM-managed library skills for team/CI (pinned `apm.yml` + lockfile + `.agents/skills/`; distribution-mode alternative to checkout wiring, offered in Phase 0).
 - `skillspector.md` — SkillSpector scanner CLI + `@skill-inspector` scan gate, with opt-in Cisco second opinion on `CAUTION` (`/setup` Phase 0.5, runs before any other tooling install so external skills are scanned before they activate).
 - `openshell.md` — OpenShell sandbox + container runtime + baseline policy, all opt-in (`/setup` Phase 0.6, containment for the rest of setup).
 - `archify.md` — validated architecture/workflow/sequence/dataflow/lifecycle diagrams as standalone HTML (`@archify` after install).
@@ -28,7 +29,7 @@ Resolve the checkout in this order: `$SKILLS_DIR` env override, then the pointer
 
 ## Rules for `/setup`
 
-- Phase 0 is always bootstrap (`bootstrap.md`): wire this project to the library project-locally + project `AGENTS.md`. If `AGENTS.md` is already complete, verify it and move on.
+- Phase 0 is always bootstrap (`bootstrap.md`): wire this project to the library project-locally + project `AGENTS.md`. If `AGENTS.md` is already complete, verify it and move on. Projects that must ship library skills with the repo (team/CI) use APM-managed mode instead (`apm.md`): pinned `apm.yml` + lockfile + `.agents/skills/`, no personal checkout path. One mode per project per skill ID — never checkout wiring and APM copies of the same skill together.
 - Phase 0.5 is always the skill guardrail (`skillspector.md`): check/install the `skillspector` CLI and confirm `@skill-inspector` advertises, before any other tooling install. Every later external-skill install is scanned before it activates: `CAUTION`/`REJECT` shows exact reasons and the user decides to continue or not. On `CAUTION`, offer the Cisco `skill-scanner` second opinion (local static core, nothing leaves host) before asking to continue.
 - Phase 0.6 is always the containment offer (`openshell.md`, opt-in, default-off): check `openshell` + `docker`/`podman` + baseline policy, offer to install what is missing (runtime prompt only when neither runtime is present) and to run the rest of setup sandboxed. Never enable silently.
 - Default scope is project-local. The library itself is wired per project (`<project>/.opencode/opencode.jsonc` `skills` entry pointing at the checkout's `skills/` subdirectory, so it advertises only where `/setup` ran — each teammate runs `/setup` once for their own checkout path and never commits the personal path). A bare-checkout entry is the legacy layout (it advertised README/AGENTS as bogus skills) — replace it with `<checkout>/skills`. Optional tooling goes into `.opencode/skills` in the current repo (committed for team/CI). Global (`-g` / `~/.config/opencode/skills`, or a global `skills` array entry) only on explicit opt-in — global installs advertise in every session.

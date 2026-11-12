@@ -5,11 +5,14 @@ Central source of truth for reusable skills. Edits happen here; projects only co
 ## Layout (directory form only)
 
 ```text
+apm.yml                    # APM package manifest (skill-collection form; name/version/metadata)
 skills/<skill-id>/SKILL.md
 skills/<skill-id>/scripts/...
 skills/<skill-id>/references/...
+skills/<skill-id>/apm.yml  # optional per-skill bundle manifest (composite skills declare sibling deps, e.g. web-quality-audit)
 setup/                     # setup references for /setup (plain .md, never SKILL.md, never discovered as skills)
 setup/bootstrap.md         # project AGENTS.md scaffold + per-project library wiring (plain reference, run as /setup Phase 0)
+setup/apm.md               # APM-managed library skills for team/CI (plain reference, offered in /setup Phase 0)
 commands/setup.md          # single setup wizard command (installed by scripts/install.sh)
 global-AGENTS.md              # universal guidance; installed as ~/.config/opencode/AGENTS.md
 templates/AGENTS.template.md  # thin per-project template (used by /setup Phase 0)
@@ -21,7 +24,7 @@ scripts/lint-skills.py        # repo tooling, not a skill
 
 - ID = directory name. Lowercase kebab-case, 1–64 chars: `^[a-z0-9]+(-[a-z0-9]+)*$`.
 - Frontmatter `name` must equal the directory ID (OpenCode treats it as display-only, but VSCode/Claude tooling requires the match); the path-derived ID is what the `skill` tool loads (case-sensitive).
-- `description` in frontmatter is required — without it the skill is never advertised to the model.
+- `description` in frontmatter is required — without it the skill is never advertised to the model. Frontmatter values must be ASCII-only (APM skill-collection validation) — use `-` instead of em-dashes.
 - Invocation mode is one of two: advertised (default) or user-only via `metadata.opencode/autoinvoke: false`. There are no native always/once-per-session flags — those rules go in `global-AGENTS.md`, and the linter rejects such keys in skill frontmatter.
 - Paths inside a skill are relative to its own directory, or relative to the skills checkout resolved at runtime (`$SKILLS_DIR`, never a hardcoded clone location). Canonical `~/.config/` references are allowed; machine-specific absolute paths (`/home/…`, `/Users/…`) and hardcoded checkout paths (`~/code/skills`) are not.
 - Flat `*.md` skills and nested `teams/<id>/SKILL.md` are not used here; keep every skill top-level under `skills/` as `skills/<skill-id>/SKILL.md`.
@@ -41,10 +44,11 @@ Fresh machines run `scripts/install.sh` from the checkout (clone location does n
 ## Add / update / remove
 
 - Add: create `skills/<skill-id>/SKILL.md` with `name` + `description`, supporting files beside it. Pick advertised (default) or user-only (`metadata.opencode/autoinvoke: false`). Run lint before committing. Setup docs are not skills — add to `setup/<topic>.md` + route via `setup/_index.md`, exposed through `commands/setup.md`.
-- Update: edit here, push; consumers `git pull` + re-run `scripts/install.sh` if wiring changed. No re-copying needed for project-local `skills` entries pointing at the checkout's `skills/` dir.
-- Remove: delete the `skills/<skill-id>/` directory. Before deleting, grep consuming projects for per-project copies under `.opencode/skills/<id>`.
-- Per-project copy (`<project>/.opencode/skills/<id>/`) is opt-in only, when a skill must ship with that repo for team/CI — it is the team-sharing mechanism. Default is the project-local `skills` entry pointing at the checkout's `skills/` dir (machine-local, each teammate runs `/setup` once, never committed). Avoid duplicate IDs: explicit `skills` config entries outrank `.opencode/skills` on the same ID in V2, so a pinned copy with the same ID is hidden — use a different ID (e.g. `<id>-pinned`) when pinning.
-- Consumer projects: run `/setup` from the project directory. Phase 0 wires the project to the library (project-local `skills` entry) and scaffolds `AGENTS.md` from `templates/AGENTS.template.md`. Universal text stays in the global file; never inline it into project files.
+- Update: edit here, push; checkout-wired consumers `git pull` + re-run `scripts/install.sh` if wiring changed. No re-copying needed for project-local `skills` entries pointing at the checkout's `skills/` dir. APM consumers bump the tag in their `apm.yml` + `apm install` (or `apm update`) and commit the refreshed lockfile + deployed tree.
+- Release: bump the root `apm.yml` `version` and tag `vX.Y.Z` together (commit, then tag, then push both). Composite-skill manifests (`skills/web-quality-audit/apm.yml`) pin sibling deps to the same tag — update them in the same release commit.
+- Remove: delete the `skills/<skill-id>/` directory. Before deleting, grep consuming projects for APM deps (`apm.yml` / `apm.lock.yaml`) and per-project copies under `.opencode/skills/<id>`.
+- Team/CI sharing defaults to APM-managed mode (`setup/apm.md`): the consumer project commits `apm.yml` + `apm.lock.yaml` + `.agents/skills/` pinned to a release tag (`apm install Mahesh-Bishnoi/skills#<tag> --skill <id> ... --target opencode`); teammates/CI run `apm install --frozen`, `apm audit` detects drift. Manual per-project copies (`<project>/.opencode/skills/<id>-pinned/`) are the no-APM fallback — use a different ID, since explicit `skills` config entries outrank `.opencode/skills` on the same ID in V2. One mode per project per skill ID. Checkout wiring (project-local `skills` entry, machine-local, never committed, each teammate runs `/setup` once) remains the author's live-edit mode.
+- Consumer projects: run `/setup` from the project directory. Phase 0 wires the project to the library (project-local `skills` entry, or APM-managed mode for team/CI) and scaffolds `AGENTS.md` from `templates/AGENTS.template.md`. Universal text stays in the global file; never inline it into project files.
 
 ## Verify
 

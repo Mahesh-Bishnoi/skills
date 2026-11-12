@@ -1,6 +1,6 @@
 ---
 name: clean-code
-description: Language-agnostic architecture and clean-code rules for writing, modifying, refactoring, or reviewing code — deep modules, seams, SOLID, dependency injection, TDD, testing, error handling, and anti-slop discipline. Load before any non-trivial code change.
+description: Language-agnostic architecture and clean-code rules for writing, modifying, refactoring, or reviewing code - deep modules, seams, SOLID, dependency injection, TDD, testing, error handling, and anti-slop discipline. Load before any non-trivial code change.
 ---
 
 Goal: code that stays easy to change after 100 edits by different agents. Every rule serves one test — *can the next change be made locally, safely, and obviously?* Project `AGENTS.md` and existing codebase conventions override this skill.
